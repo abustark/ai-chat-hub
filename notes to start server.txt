@@ -1,5 +1,0 @@
-Save all files in your /ai-chat-hub/ folder. Make sure index.html is updated.
-Open a Terminal and navigate into the folder (cd path/to/ai-chat-hub).
-Install (if you haven't already): Run npm install.
-Start the Server: Run node server.js.
-Use the App: Open your browser and go to http://localhost:3000.

@@ -368,7 +368,7 @@
             dom.sidebarOverlay.addEventListener('click', () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); });
         };
 
-        init();
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
