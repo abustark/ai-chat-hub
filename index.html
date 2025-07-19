@@ -53,7 +53,6 @@
         .dark .scrollbar-custom::-webkit-scrollbar-thumb { background: #555; }
         .chat-list-item.active { background-color: #e5e7eb; }
         .dark .chat-list-item.active { background-color: #374151; }
-        /* Custom Dropdown Animation */
         .model-selector-panel { transition: opacity 0.2s ease, transform 0.2s ease; }
     </style>
 </head>
@@ -86,7 +85,6 @@
                     <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">AI Chat Hub</h1>
                 </div>
             </div>
-            <!-- Header Right Section (Yellow Circle) -->
             <div class="flex items-center space-x-2 p-1 rounded-full bg-gray-200 dark:bg-gray-700/50">
                 <div id="modelIndicatorPill" class="flex items-center pl-3 pr-2 py-1 text-sm font-medium"></div>
                 <button id="themeToggle" class="p-1.5 rounded-full bg-white dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-600/80 transition-colors">
@@ -97,7 +95,6 @@
         </header>
         
         <main class="flex-1 flex flex-col overflow-hidden min-h-0">
-            <!-- NEW Custom Model Selector (Green Circle) -->
             <div class="px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 relative">
                  <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-lg font-semibold focus:outline-none">
                     <span id="modelSelectorLabel"></span>
@@ -134,7 +131,7 @@
             'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
             'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' },
             'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' },
-            'qwen/qwen3-14b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
+            'qwen/qwq-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
             'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
         };
 
@@ -156,6 +153,12 @@
         const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
         const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
+        
+        // --- NEW --- Mobile UX Helper
+        const closeSidebar = () => {
+            dom.sidebar.classList.add('-translate-x-full');
+            dom.sidebarOverlay.classList.add('hidden');
+        };
         
         const applyModelColorTheme = (colorName) => {
             if (!colorName) return;
@@ -190,13 +193,10 @@
 
         const renderChatList = () => {
             dom.chatList.innerHTML = '';
-            Object.values(chats).sort((a,b) => b.id - a.id).forEach(chat => {
+            Object.values(chats).sort((a, b) => b.id - a.id).forEach(chat => {
                 const chatItemContainer = document.createElement('div');
                 chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                chatItemContainer.innerHTML = `
-                    <a href="#" class="flex items-center justify-between w-full px-4 py-2 text-sm rounded-md truncate ${chat.id === activeChatId ? 'font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}" data-chat-id="${chat.id}"><span class="truncate">${chat.name}</span></a>
-                    <button class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 chat-options-btn opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
-                    <div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 delete-chat-btn">Delete</button></div>`;
+                chatItemContainer.innerHTML = `<a href="#" class="flex items-center justify-between w-full px-4 py-2 text-sm rounded-md truncate ${chat.id === activeChatId ? 'font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}" data-chat-id="${chat.id}"><span class="truncate">${chat.name}</span></a><button class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 chat-options-btn opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 delete-chat-btn">Delete</button></div>`;
                 chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
                 chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
                 chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
@@ -214,26 +214,33 @@
             applyModelColorTheme(MODEL_CONFIG[chat.model]?.color);
         };
         
-        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(); };
+        const switchChat = (chatId) => {
+            activeChatId = chatId;
+            renderActiveChat();
+            renderChatList();
+            closeSidebar(); // --- NEW ---
+        };
 
         const createNewChat = () => {
             const newChatId = Date.now();
             chats[newChatId] = {
                 id: newChatId,
                 name: "New Chat",
-                model: Object.keys(MODEL_CONFIG)[0], // Default to first model
+                model: Object.keys(MODEL_CONFIG)[0],
                 messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }]
             };
             activeChatId = newChatId;
             saveChats();
             renderChatList();
             renderActiveChat();
+            closeSidebar(); // --- NEW ---
         };
 
         const appendMessage = (sender, text, isHistory = false) => {
             const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant';
             const isUser = role === 'user';
             const currentChat = chats[activeChatId];
+            if (!currentChat) return; // --- NEW --- Safety check
             const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
             const userBubbleColor = `bg-${modelConf.color}`;
             const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
@@ -247,7 +254,9 @@
         };
         
         const showTypingIndicator = () => {
-            const modelConf = MODEL_CONFIG[chats[activeChatId].model] || { name: 'AI', color: 'indigo-600' };
+            const currentChat = chats[activeChatId];
+            if (!currentChat) return; // --- NEW --- Safety check
+            const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
             const indicator = document.createElement('div');
             indicator.id = 'typingIndicator';
             indicator.innerHTML = `<div class="flex items-start justify-start"><div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div><div class="bot-bubble bg-white dark:bg-gray-700 shadow-sm chat-bubble p-4"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
@@ -302,7 +311,6 @@
             if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
             dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
 
-            // Populate custom model selector
             Object.keys(MODEL_CONFIG).forEach(key => {
                 const model = MODEL_CONFIG[key];
                 const optionEl = document.createElement('a');
@@ -329,21 +337,14 @@
             dom.modelSelectorBtn.addEventListener('click', e => {
                 e.stopPropagation();
                 const isHidden = dom.modelSelectorPanel.classList.toggle('hidden');
-                if (isHidden) {
-                    dom.modelSelectorPanel.style.opacity = '0';
-                    dom.modelSelectorPanel.style.transform = 'scale(0.95)';
-                } else {
-                    dom.modelSelectorPanel.style.opacity = '1';
-                    dom.modelSelectorPanel.style.transform = 'scale(1)';
-                }
+                dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1';
+                dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)';
             });
             
-            document.addEventListener('click', (e) => {
-                if (!dom.modelSelectorBtn.contains(e.target)) {
-                    dom.modelSelectorPanel.classList.add('hidden');
-                    dom.modelSelectorPanel.style.opacity = '0';
-                    dom.modelSelectorPanel.style.transform = 'scale(0.95)';
-                }
+            document.addEventListener('click', () => {
+                 dom.modelSelectorPanel.classList.add('hidden');
+                 dom.modelSelectorPanel.style.opacity = '0';
+                 dom.modelSelectorPanel.style.transform = 'scale(0.95)';
                  document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden'));
             });
 
@@ -365,7 +366,7 @@
                 recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse');
             });
             dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
-            dom.sidebarOverlay.addEventListener('click', () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); });
+            dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
         };
 
         document.addEventListener('DOMContentLoaded', init);
