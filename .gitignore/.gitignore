@@ -1,5 +1,0 @@
-# Ignore the secret environment file
-.env
-
-# Ignore installed packages folder
-/node_modules
