@@ -8,6 +8,11 @@
     <title>AI Chat Hub | Multi-Model Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+      <!-- Libraries for Markdown and Code Highlighting -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -54,8 +59,50 @@
         .chat-list-item.active { background-color: #e5e7eb; }
         .dark .chat-list-item.active { background-color: #374151; }
         .model-selector-panel { transition: opacity 0.2s ease, transform 0.2s ease; }
+        .bot-bubble pre {
+            position: relative;
+            background-color: #282c34; /* atom-one-dark background */
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .bot-bubble code {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9em;
+        }
+        .copy-code-btn {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        .bot-bubble pre:hover .copy-code-btn {
+            opacity: 1;
+        }
+        .copy-code-btn:active {
+            background-color: #2d3748;
+        }
+        /* Style for inline code */
+        .bot-bubble p > code, .bot-bubble li > code {
+            background-color: #4a556820;
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
     </style>
 </head>
+
 <body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-dvh flex overflow-hidden">
     <!-- Sidebar for Chat History -->
     <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 fixed md:static h-full z-20 sidebar">
@@ -237,22 +284,71 @@
         };
 
         const appendMessage = (sender, text, isHistory = false) => {
+
             const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant';
             const isUser = role === 'user';
             const currentChat = chats[activeChatId];
-            if (!currentChat) return; // --- NEW --- Safety check
+            if (!currentChat) return;
             const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
             const userBubbleColor = `bg-${modelConf.color}`;
             const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
             const justifyClass = isUser ? 'justify-end' : 'justify-start';
             const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
+            
             const messageEl = document.createElement('div');
             if (!isHistory) messageEl.className = 'message-enter';
-            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><p>${text.replace(/\n/g, '<br>')}</p>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
+
+            // --- CORE LOGIC CHANGE IS HERE ---
+            let messageContent;
+            if (isUser) {
+                // For users, just display plain text to prevent HTML injection
+                const p = document.createElement('p');
+                p.textContent = text;
+                messageContent = p.outerHTML;
+            } else {
+                // For bots, parse the Markdown into HTML
+                messageContent = marked.parse(text);
+            }
+            
+            messageEl.innerHTML = `
+                <div class="flex items-start ${justifyClass}">
+                    ${isUser ? '' : avatarHtml}
+                    <div class="${bubbleClasses} chat-bubble p-4">
+                        <div class="prose dark:prose-invert max-w-none">
+                            ${messageContent}
+                        </div>
+                        ${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}
+                    </div>
+                    ${isUser ? avatarHtml : ''}
+                </div>`;
             dom.chatHistory.appendChild(messageEl);
+
+            // After appending, find all code blocks and add copy buttons
+            if (!isUser) {
+                const codeBlocks = messageEl.querySelectorAll('pre');
+                codeBlocks.forEach(block => {
+                    const code = block.querySelector('code');
+                    const copyBtn = document.createElement('button');
+                    copyBtn.className = 'copy-code-btn';
+                    copyBtn.textContent = 'Copy';
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(code.textContent).then(() => {
+                            copyBtn.textContent = 'Copied!';
+                            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
+                        });
+                    });
+                    block.appendChild(copyBtn);
+                    
+                    // Apply syntax highlighting
+                    if (code) {
+                        hljs.highlightElement(code);
+                    }
+                });
+            }
+
             dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
         };
-        
+
         const showTypingIndicator = () => {
             const currentChat = chats[activeChatId];
             if (!currentChat) return; // --- NEW --- Safety check
