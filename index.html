@@ -8,11 +8,6 @@
     <title>AI Chat Hub | Multi-Model Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-      <!-- Libraries for Markdown and Code Highlighting -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -58,73 +53,9 @@
         .dark .scrollbar-custom::-webkit-scrollbar-thumb { background: #555; }
         .chat-list-item.active { background-color: #e5e7eb; }
         .dark .chat-list-item.active { background-color: #374151; }
-.model-selector-panel { transition: opacity 0.2s ease, transform 0.2s ease; }
-
-
-.prose :where(pre):not(:where([class~="not-prose"] *)) {
-    background-color: #282c34; /* Match atom-one-dark theme */
-    padding: 1rem;
-    border-radius: 0.5rem;
-}
-.prose :where(code):not(:where([class~="not-prose"] *)) {
-    color: inherit;
-    background-color: transparent;
-    padding: 0;
-}
-
-.bot-bubble .prose p {
-    margin-bottom: 1em; /* Add more space between paragraphs */
-}
-.bot-bubble .prose ul, .bot-bubble .prose ol {
-    margin-top: 1em;
-    margin-bottom: 1em; /* Add space around lists */
-}
-.bot-bubble .prose li {
-    margin-top: 0.5em; /* Add space between list items */
-}
-.bot-bubble .prose li::marker {
-    color: #9ca3af; /* A softer color for bullet points */
-}
-.dark .bot-bubble .prose li::marker {
-    color: #6b7280;
-}
-
-/* 3. Existing Code Block & Copy Button Styles */
-.bot-bubble pre {
-    position: relative;
-    margin-top: 0.5rem;
-    margin-bottom: 0.5rem;
-    overflow-x: auto;
-    white-space: pre;
-}
-.copy-code-btn {
-    position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
-    padding: 0.25rem 0.5rem;
-    background-color: #4a5568;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-.bot-bubble pre:hover .copy-code-btn {
-    opacity: 1;
-}
-.copy-code-btn:active { background-color: #2d3748; }
-.bot-bubble p > code, .bot-bubble li > code {
-    background-color: #4a556820;
-    padding: 0.1rem 0.3rem;
-    border-radius: 4px;
-    font-size: 0.85em;
-}
-
-
-</style>
+        .model-selector-panel { transition: opacity 0.2s ease, transform 0.2s ease; }
+    </style>
 </head>
-
 <body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-dvh flex overflow-hidden">
     <!-- Sidebar for Chat History -->
     <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 fixed md:static h-full z-20 sidebar">
@@ -198,10 +129,10 @@
         const MODEL_CONFIG = {
             'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' },
             'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' },
-            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' },
-            'qwen/qwq-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
-            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
+            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3', color: 'deepseek-v3' },
+            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1', color: 'deepseek-r1' },
+            'qwen/qwq-32b:free': { name: 'Qwen3 32B', color: 'qwen-32b' },
+            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B', color: 'qwen-235b' }
         };
 
         // --- DOM Elements ---
@@ -223,23 +154,23 @@
         const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
         const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
         
-        // --- NEW --- Mobile UX Helper
-        const closeSidebar = () => {
-            dom.sidebar.classList.add('-translate-x-full');
-            dom.sidebarOverlay.classList.add('hidden');
-        };
+        const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
         
         const applyModelColorTheme = (colorName) => {
             if (!colorName) return;
             const buttons = [dom.newChatBtn, dom.sendBtn];
             const colorClasses = Object.values(MODEL_CONFIG).map(m => `bg-${m.color}`);
             const hoverClasses = Object.values(MODEL_CONFIG).map(m => `hover:bg-${m.color}/90`);
+            buttons.forEach(button => { button.classList.remove(...colorClasses, 'bg-indigo-600'); button.classList.remove(...hoverClasses, 'hover:bg-indigo-700'); button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`); });
+        };
 
-            buttons.forEach(button => {
-                button.classList.remove(...colorClasses, 'bg-indigo-600');
-                button.classList.remove(...hoverClasses, 'hover:bg-indigo-700');
-                button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`);
-            });
+        // --- NEW --- Rename Chat Logic
+        const renameChat = (chatId, newName) => {
+            if (chats[chatId] && newName.trim()) {
+                chats[chatId].name = newName.trim();
+                saveChats();
+                renderChatList();
+            }
         };
 
         const deleteChat = (chatId) => {
@@ -247,7 +178,6 @@
             const isDeletingActiveChat = chatId === activeChatId;
             delete chats[chatId];
             saveChats();
-
             if (isDeletingActiveChat) {
                 const remainingChatIds = Object.keys(chats);
                 if (remainingChatIds.length > 0) {
@@ -262,13 +192,37 @@
 
         const renderChatList = () => {
             dom.chatList.innerHTML = '';
-            Object.values(chats).sort((a, b) => b.id - a.id).forEach(chat => {
+            Object.values(chats).sort((a,b) => b.id - a.id).forEach(chat => {
                 const chatItemContainer = document.createElement('div');
                 chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                chatItemContainer.innerHTML = `<a href="#" class="flex items-center justify-between w-full px-4 py-2 text-sm rounded-md truncate ${chat.id === activeChatId ? 'font-semibold' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}" data-chat-id="${chat.id}"><span class="truncate">${chat.name}</span></a><button class="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 chat-options-btn opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 delete-chat-btn">Delete</button></div>`;
+                // --- NEW --- Added Rename button to the menu
+                chatItemContainer.innerHTML = `
+                    <div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}">
+                        <a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a>
+                        <input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}">
+                        <button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
+                    </div>
+                    <div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu">
+                        <button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button>
+                        <button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button>
+                    </div>`;
+                
+                // --- NEW --- Event listeners for Rename
+                const nameSpan = chatItemContainer.querySelector('.chat-name-span');
+                const renameInput = chatItemContainer.querySelector('.chat-rename-input');
+                const saveRename = () => {
+                    renameChat(chat.id, renameInput.value);
+                    nameSpan.classList.remove('hidden');
+                    renameInput.classList.add('hidden');
+                };
+                renameInput.addEventListener('keydown', e => e.key === 'Enter' && saveRename());
+                renameInput.addEventListener('blur', saveRename);
+                
                 chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
                 chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
+                chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
                 chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
+                
                 dom.chatList.appendChild(chatItemContainer);
             });
         };
@@ -283,30 +237,18 @@
             applyModelColorTheme(MODEL_CONFIG[chat.model]?.color);
         };
         
-        const switchChat = (chatId) => {
-            activeChatId = chatId;
-            renderActiveChat();
-            renderChatList();
-            closeSidebar(); // --- NEW ---
-        };
-
+        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(); closeSidebar(); };
         const createNewChat = () => {
             const newChatId = Date.now();
-            chats[newChatId] = {
-                id: newChatId,
-                name: "New Chat",
-                model: Object.keys(MODEL_CONFIG)[0],
-                messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }]
-            };
+            chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
             activeChatId = newChatId;
             saveChats();
             renderChatList();
             renderActiveChat();
-            closeSidebar(); // --- NEW ---
+            closeSidebar();
         };
 
         const appendMessage = (sender, text, isHistory = false) => {
-
             const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant';
             const isUser = role === 'user';
             const currentChat = chats[activeChatId];
@@ -316,64 +258,26 @@
             const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
             const justifyClass = isUser ? 'justify-end' : 'justify-start';
             const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
-            
             const messageEl = document.createElement('div');
             if (!isHistory) messageEl.className = 'message-enter';
-
-            // --- CORE LOGIC CHANGE IS HERE ---
-            let messageContent;
-            if (isUser) {
-                // For users, just display plain text to prevent HTML injection
-                const p = document.createElement('p');
-                p.textContent = text;
-                messageContent = p.outerHTML;
-            } else {
-                // For bots, parse the Markdown into HTML
-                messageContent = marked.parse(text);
-            }
-            
-            messageEl.innerHTML = `
-                <div class="flex items-start ${justifyClass}">
-                    ${isUser ? '' : avatarHtml}
-                    <div class="${bubbleClasses} chat-bubble p-4">
-                        <div class="prose dark:prose-invert max-w-none">
-                            ${messageContent}
-                        </div>
-                        ${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}
-                    </div>
-                    ${isUser ? avatarHtml : ''}
-                </div>`;
+            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text)}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
             dom.chatHistory.appendChild(messageEl);
-
-            // After appending, find all code blocks and add copy buttons
             if (!isUser) {
-                const codeBlocks = messageEl.querySelectorAll('pre');
-                codeBlocks.forEach(block => {
-                    const code = block.querySelector('code');
+                messageEl.querySelectorAll('pre code').forEach(block => {
+                    const pre = block.parentElement;
                     const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-code-btn';
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.addEventListener('click', () => {
-                        navigator.clipboard.writeText(code.textContent).then(() => {
-                            copyBtn.textContent = 'Copied!';
-                            setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000);
-                        });
-                    });
-                    block.appendChild(copyBtn);
-                    
-                    // Apply syntax highlighting
-                    if (code) {
-                        hljs.highlightElement(code);
-                    }
+                    copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
+                    copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
+                    pre.appendChild(copyBtn);
+                    hljs.highlightElement(block);
                 });
             }
-
             dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
         };
-
+        
         const showTypingIndicator = () => {
             const currentChat = chats[activeChatId];
-            if (!currentChat) return; // --- NEW --- Safety check
+            if (!currentChat) return;
             const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
             const indicator = document.createElement('div');
             indicator.id = 'typingIndicator';
@@ -398,28 +302,21 @@
             dom.messageInput.style.height = 'auto';
             showTypingIndicator();
             try {
-                const res = await fetch('/api/chat', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ model: currentChat.model, messages: currentChat.messages.filter(m => m.role !== 'system').slice(-10) })
-                });
+                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: currentChat.model, messages: currentChat.messages.filter(m => m.role !== 'system').slice(-10) }) });
                 removeTypingIndicator();
                 if (!res.ok) {
                     const errorData = await res.json();
                     const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
-                    appendMessage('bot', errorMsg);
-                    currentChat.messages.push({ role: 'assistant', content: errorMsg });
+                    appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
                 } else {
                     const data = await res.json();
                     const reply = data.choices[0].message.content;
-                    appendMessage('bot', reply);
-                    currentChat.messages.push({ role: 'assistant', content: reply });
+                    appendMessage('bot', reply); currentChat.messages.push({ role: 'assistant', content: reply });
                 }
             } catch (error) {
                 removeTypingIndicator();
                 const errorMsg = `<strong>Network Error:</strong> Could not connect to the server.`;
-                appendMessage('bot', errorMsg);
-                currentChat.messages.push({ role: 'assistant', content: errorMsg });
+                appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
             } finally {
                 saveChats();
             }
@@ -428,61 +325,22 @@
         const init = () => {
             if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
             dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
-
             Object.keys(MODEL_CONFIG).forEach(key => {
-                const model = MODEL_CONFIG[key];
-                const optionEl = document.createElement('a');
-                optionEl.href = '#';
+                const model = MODEL_CONFIG[key]; const optionEl = document.createElement('a'); optionEl.href = '#';
                 optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
-                optionEl.textContent = model.name;
-                optionEl.dataset.modelKey = key;
-                optionEl.addEventListener('click', e => {
-                    e.preventDefault();
-                    if (chats[activeChatId]) {
-                        chats[activeChatId].model = key;
-                        saveChats();
-                        dom.modelSelectorLabel.textContent = model.name;
-                        dom.modelIndicatorPill.textContent = model.name;
-                        applyModelColorTheme(model.color);
-                    }
-                    dom.modelSelectorPanel.classList.add('hidden');
-                    dom.modelSelectorPanel.style.opacity = '0';
-                    dom.modelSelectorPanel.style.transform = 'scale(0.95)';
-                });
+                optionEl.textContent = model.name; optionEl.dataset.modelKey = key;
+                optionEl.addEventListener('click', e => { e.preventDefault(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); });
                 dom.modelSelectorPanel.appendChild(optionEl);
             });
-            
-            dom.modelSelectorBtn.addEventListener('click', e => {
-                e.stopPropagation();
-                const isHidden = dom.modelSelectorPanel.classList.toggle('hidden');
-                dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1';
-                dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)';
-            });
-            
-            document.addEventListener('click', () => {
-                 dom.modelSelectorPanel.classList.add('hidden');
-                 dom.modelSelectorPanel.style.opacity = '0';
-                 dom.modelSelectorPanel.style.transform = 'scale(0.95)';
-                 document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden'));
-            });
-
+            dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; });
+            document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
             chats = loadChats();
-            if (Object.keys(chats).length === 0) { createNewChat(); } 
-            else { switchChat(Math.max(...Object.keys(chats).map(Number))); }
-            
+            if (Object.keys(chats).length === 0) { createNewChat(); } else { switchChat(Math.max(...Object.keys(chats).map(Number))); }
             dom.newChatBtn.addEventListener('click', createNewChat);
             dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
             dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
             dom.sendBtn.addEventListener('click', sendMessage);
-            dom.voiceBtn.addEventListener('click', () => {
-                const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-                if (!recognition) return alert("Speech Recognition not supported.");
-                dom.voiceBtn.classList.add('voice-pulse');
-                recognition.lang = 'en-US';
-                recognition.start();
-                recognition.onresult = e => { dom.messageInput.value = e.results[0][0].transcript; sendMessage(); };
-                recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse');
-            });
+            dom.voiceBtn.addEventListener('click', () => { const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); if (!recognition) return alert("Speech Recognition not supported."); dom.voiceBtn.classList.add('voice-pulse'); recognition.lang = 'en-US'; recognition.start(); recognition.onresult = e => { dom.messageInput.value = e.results[0][0].transcript; sendMessage(); }; recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse'); });
             dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
             dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
         };
