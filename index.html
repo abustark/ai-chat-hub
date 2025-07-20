@@ -312,50 +312,54 @@
             dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
         };
         
-        const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
+const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
 
-        const sendMessage = async () => {
-            const message = dom.messageInput.value.trim();
-            if (!message) return;
-            const currentChat = chats[activeChatId];
-            appendMessage('user', message);
-            currentChat.messages.push({ role: 'user', content: message });
-            if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
-                currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
-                renderChatList();
-            }
-            dom.messageInput.value = '';
-            dom.messageInput.style.height = 'auto';
-            showTypingIndicator();
-            
-            // --- NEW --- Prepare messages with system prompt
-            const messagesToSend = [
-                { role: 'system', content: currentChat.systemPrompt },
-                ...currentChat.messages.filter(m => m.role !== 'system').slice(-10)
-            ];
+const sendMessage = async () => {
+    const message = dom.messageInput.value.trim();
+    if (!message) return;
+    const currentChat = chats[activeChatId];
+    appendMessage('user', message);
+    currentChat.messages.push({ role: 'user', content: message });
+    if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
+        currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
+        renderChatList();
+    }
+    dom.messageInput.value = '';
+    dom.messageInput.style.height = 'auto';
+    showTypingIndicator();
 
-            try {
-                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) });
-                removeTypingIndicator();
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
-                    appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-                } else {
-                    const data = await res.json();
-                    const reply = data.choices[0].message.content;
-                    appendMessage('bot', reply); currentChat.messages.push({ role: 'assistant', content: reply });
-                }
-            } catch (error) {
-                removeTypingIndicator();
-                const errorMsg = `<strong>Network Error:</strong> Could not connect to the server.`;
-                appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-            } finally {
-                saveChats();
-            }
-        };
-        
-        const init = () => {
+    // --- THIS IS THE CORRECTED LOGIC ---
+    const messagesToSend = [
+        { role: 'system', content: currentChat.systemPrompt },
+        ...currentChat.messages.filter(m => m.role !== 'system').slice(-10)
+    ];
+
+    try {
+        const res = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) // Use the corrected array here
+        });
+        removeTypingIndicator();
+        if (!res.ok) {
+            const errorData = await res.json();
+            const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
+            appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
+        } else {
+            const data = await res.json();
+            const reply = data.choices[0].message.content;
+            appendMessage('bot', reply); currentChat.messages.push({ role: 'assistant', content: reply });
+        }
+    } catch (error) {
+        removeTypingIndicator();
+        const errorMsg = `<strong>Network Error:</strong> Could not connect to the server.`;
+        appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
+    } finally {
+        saveChats();
+    }
+};
+
+const init = () => {
             if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
             dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
             Object.keys(MODEL_CONFIG).forEach(key => {
