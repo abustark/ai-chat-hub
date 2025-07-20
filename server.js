@@ -5,10 +5,12 @@ const cors = require('cors');
 require('dotenv').config();
 const admin = require('firebase-admin');
 
-if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+if (process.env.RENDER === 'true') {
+    // We are on Render, which uses the Secret File's GOOGLE_APPLICATION_CREDENTIALS path
     admin.initializeApp();
-    console.log("Firebase Admin SDK initialized using Render's Secret File.");
+    console.log("Firebase Admin SDK initialized using Render's environment.");
 } else {
+    // We are on our local machine, load the file manually
     try {
         const serviceAccount = require('./service-account-key.json');
         admin.initializeApp({
@@ -20,7 +22,6 @@ if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
         process.exit(1);
     }
 }
-
 
 const app = express();
 const port = 3000;
