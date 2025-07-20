@@ -53,7 +53,7 @@
         .dark .scrollbar-custom::-webkit-scrollbar-thumb { background: #555; }
         .chat-list-item.active { background-color: #e5e7eb; }
         .dark .chat-list-item.active { background-color: #374151; }
-        .model-selector-panel { transition: opacity 0.2s ease, transform 0.2s ease; }
+        .modal-transition { transition: opacity 0.2s ease, transform 0.2s ease; }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-dvh flex overflow-hidden">
@@ -95,12 +95,18 @@
         </header>
         
         <main class="flex-1 flex flex-col overflow-hidden min-h-0">
-            <div class="px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 relative">
-                 <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-lg font-semibold focus:outline-none">
-                    <span id="modelSelectorLabel"></span>
-                    <svg class="w-5 h-5 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                 </button>
-                 <div id="modelSelectorPanel" class="model-selector-panel absolute top-full left-6 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
+            <div class="px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="relative">
+                    <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-lg font-semibold focus:outline-none">
+                       <span id="modelSelectorLabel"></span>
+                       <svg class="w-5 h-5 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <div id="modelSelectorPanel" class="modal-transition absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
+                </div>
+                <!-- NEW System Prompt Button -->
+                <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                </button>
             </div>
             
             <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-6 scrollbar-custom">
@@ -124,15 +130,29 @@
     </div>
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
 
+    <!-- NEW System Prompt Modal -->
+    <div id="promptModal" class="fixed inset-0 z-30 flex items-center justify-center hidden">
+        <div id="promptOverlay" class="absolute inset-0 bg-black/50"></div>
+        <div id="promptPanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6" style="transform: scale(0.95); opacity: 0;">
+            <h2 class="text-lg font-semibold mb-4">Custom System Prompt</h2>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Define the AI's personality and instructions for this chat session.</p>
+            <textarea id="promptTextarea" class="w-full h-40 p-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g., You are a sarcastic pirate..."></textarea>
+            <div class="mt-4 flex justify-end space-x-2">
+                <button id="promptCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
+                <button id="promptSaveBtn" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- CONFIGURATION ---
         const MODEL_CONFIG = {
             'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' },
             'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3', color: 'deepseek-v3' },
-            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1', color: 'deepseek-r1' },
-            'qwen/qwq-32b:free': { name: 'Qwen3 32B', color: 'qwen-32b' },
-            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B', color: 'qwen-235b' }
+            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' },
+            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' },
+            'qwen/qwen3-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
+            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
         };
 
         // --- DOM Elements ---
@@ -142,7 +162,9 @@
             chatHistory: document.getElementById('chatHistory'), sidebar: document.getElementById('sidebar'), sidebarToggle: document.getElementById('sidebarToggle'),
             sidebarOverlay: document.getElementById('sidebarOverlay'), voiceBtn: document.getElementById('voiceBtn'), newChatBtn: document.getElementById('newChatBtn'),
             chatList: document.getElementById('chatList'), modelIndicatorPill: document.getElementById('modelIndicatorPill'),
-            modelSelectorBtn: document.getElementById('modelSelectorBtn'), modelSelectorLabel: document.getElementById('modelSelectorLabel'), modelSelectorPanel: document.getElementById('modelSelectorPanel')
+            modelSelectorBtn: document.getElementById('modelSelectorBtn'), modelSelectorLabel: document.getElementById('modelSelectorLabel'), modelSelectorPanel: document.getElementById('modelSelectorPanel'),
+            promptBtn: document.getElementById('promptBtn'), promptModal: document.getElementById('promptModal'), promptOverlay: document.getElementById('promptOverlay'),
+            promptPanel: document.getElementById('promptPanel'), promptTextarea: document.getElementById('promptTextarea'), promptSaveBtn: document.getElementById('promptSaveBtn'), promptCancelBtn: document.getElementById('promptCancelBtn')
         };
 
         // --- STATE MANAGEMENT ---
@@ -153,7 +175,6 @@
         const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
         const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
-        
         const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
         
         const applyModelColorTheme = (colorName) => {
@@ -164,15 +185,27 @@
             buttons.forEach(button => { button.classList.remove(...colorClasses, 'bg-indigo-600'); button.classList.remove(...hoverClasses, 'hover:bg-indigo-700'); button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`); });
         };
 
-        // --- NEW --- Rename Chat Logic
-        const renameChat = (chatId, newName) => {
-            if (chats[chatId] && newName.trim()) {
-                chats[chatId].name = newName.trim();
-                saveChats();
-                renderChatList();
-            }
+        const openPromptModal = () => {
+            if (!activeChatId) return;
+            dom.promptTextarea.value = chats[activeChatId].systemPrompt;
+            dom.promptModal.classList.remove('hidden');
+            setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10);
+        };
+        const closePromptModal = () => {
+            dom.promptPanel.style.opacity = '0';
+            dom.promptPanel.style.transform = 'scale(0.95)';
+            setTimeout(() => dom.promptModal.classList.add('hidden'), 200);
+        };
+        const saveSystemPrompt = () => {
+            if (!activeChatId) return;
+            chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim();
+            saveChats();
+            closePromptModal();
         };
 
+        const renameChat = (chatId, newName) => {
+            if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); }
+        };
         const deleteChat = (chatId) => {
             if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
             const isDeletingActiveChat = chatId === activeChatId;
@@ -195,34 +228,16 @@
             Object.values(chats).sort((a,b) => b.id - a.id).forEach(chat => {
                 const chatItemContainer = document.createElement('div');
                 chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                // --- NEW --- Added Rename button to the menu
-                chatItemContainer.innerHTML = `
-                    <div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}">
-                        <a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a>
-                        <input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}">
-                        <button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button>
-                    </div>
-                    <div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu">
-                        <button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button>
-                        <button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button>
-                    </div>`;
-                
-                // --- NEW --- Event listeners for Rename
+                chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
                 const nameSpan = chatItemContainer.querySelector('.chat-name-span');
                 const renameInput = chatItemContainer.querySelector('.chat-rename-input');
-                const saveRename = () => {
-                    renameChat(chat.id, renameInput.value);
-                    nameSpan.classList.remove('hidden');
-                    renameInput.classList.add('hidden');
-                };
+                const saveRename = () => { renameChat(chat.id, renameInput.value); nameSpan.classList.remove('hidden'); renameInput.classList.add('hidden'); };
                 renameInput.addEventListener('keydown', e => e.key === 'Enter' && saveRename());
                 renameInput.addEventListener('blur', saveRename);
-                
                 chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
                 chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
                 chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
                 chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
-                
                 dom.chatList.appendChild(chatItemContainer);
             });
         };
@@ -240,7 +255,12 @@
         const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(); closeSidebar(); };
         const createNewChat = () => {
             const newChatId = Date.now();
-            chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
+            chats[newChatId] = {
+                id: newChatId, name: "New Chat",
+                model: Object.keys(MODEL_CONFIG)[0],
+                systemPrompt: "You are a helpful AI assistant.", // --- NEW ---
+                messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }]
+            };
             activeChatId = newChatId;
             saveChats();
             renderChatList();
@@ -260,7 +280,8 @@
             const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
             const messageEl = document.createElement('div');
             if (!isHistory) messageEl.className = 'message-enter';
-            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text)}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>;
+            let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
+            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
             dom.chatHistory.appendChild(messageEl);
             if (!isUser) {
                 messageEl.querySelectorAll('pre code').forEach(block => {
@@ -301,8 +322,15 @@
             dom.messageInput.value = '';
             dom.messageInput.style.height = 'auto';
             showTypingIndicator();
+            
+            // --- NEW --- Prepare messages with system prompt
+            const messagesToSend = [
+                { role: 'system', content: currentChat.systemPrompt },
+                ...currentChat.messages.filter(m => m.role !== 'system').slice(-10)
+            ];
+
             try {
-                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: currentChat.model, messages: currentChat.messages.filter(m => m.role !== 'system').slice(-10) }) });
+                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) });
                 removeTypingIndicator();
                 if (!res.ok) {
                     const errorData = await res.json();
@@ -343,6 +371,12 @@
             dom.voiceBtn.addEventListener('click', () => { const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)(); if (!recognition) return alert("Speech Recognition not supported."); dom.voiceBtn.classList.add('voice-pulse'); recognition.lang = 'en-US'; recognition.start(); recognition.onresult = e => { dom.messageInput.value = e.results[0][0].transcript; sendMessage(); }; recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse'); });
             dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
             dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
+            
+            // --- NEW --- Event listeners for the prompt modal
+            dom.promptBtn.addEventListener('click', openPromptModal);
+            dom.promptOverlay.addEventListener('click', closePromptModal);
+            dom.promptCancelBtn.addEventListener('click', closePromptModal);
+            dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
         };
 
         document.addEventListener('DOMContentLoaded', init);
