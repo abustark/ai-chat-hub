@@ -5,17 +5,23 @@ const cors = require('cors');
 require('dotenv').config();
 const admin = require('firebase-admin');
 
-// --- Firebase Admin Initialization ---
-try {
-    const serviceAccount = require('./service-account-key.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-    console.log("Firebase Admin SDK initialized successfully.");
-} catch (error) {
-    console.error("CRITICAL ERROR: Could not initialize Firebase Admin SDK. Make sure 'service-account-key.json' is in the root directory.", error);
-    process.exit(1);
+if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
+    admin.initializeApp();
+    console.log("Firebase Admin SDK initialized using Render's Secret File.");
+} else {
+    try {
+        const serviceAccount = require('./service-account-key.json');
+        admin.initializeApp({
+          credential: admin.credential.cert(serviceAccount)
+        });
+        console.log("Firebase Admin SDK initialized successfully from local file.");
+    } catch (error) {
+        console.error("CRITICAL ERROR: Could not initialize Firebase Admin SDK. Make sure 'service-account-key.json' is in the root directory.", error);
+        process.exit(1);
+    }
 }
+
+
 const app = express();
 const port = 3000;
 
