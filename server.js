@@ -6,11 +6,18 @@ require('dotenv').config();
 const admin = require('firebase-admin');
 
 if (process.env.RENDER === 'true') {
-    // We are on Render, which uses the Secret File's GOOGLE_APPLICATION_CREDENTIALS path
-    admin.initializeApp();
-    console.log("Firebase Admin SDK initialized using Render's environment.");
+    // On Render, we load the credentials from an environment variable.
+    const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT_JSON;
+    if (!serviceAccountJson) {
+        throw new Error("FIREBASE_SERVICE_ACCOUNT_JSON environment variable not set. Server cannot start.");
+    }
+    const serviceAccount = JSON.parse(serviceAccountJson);
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("Firebase Admin SDK initialized successfully from environment variable.");
 } else {
-    // We are on our local machine, load the file manually
+    
     try {
         const serviceAccount = require('./service-account-key.json');
         admin.initializeApp({
