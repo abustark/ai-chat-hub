@@ -11,30 +11,26 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// Helper function to transform messages for Google's API format
+// --- NEW, ROBUST Google message transformer ---
 function transformMessagesForGoogle(messages) {
-    // Google's API expects a specific format. It doesn't use a 'system' role directly.
-    // We'll prepend the system message to the first user message.
-    let system_prompt = "You are a helpful AI assistant.";
-    const newMessages = [];
-
+    let system_prompt = null;
+    const history = [];
+    
+    // Separate the system prompt from the conversation history
     messages.forEach(msg => {
-        if (msg.role === 'system') {
+        if (msg.role === 'system' && msg.content) {
             system_prompt = msg.content;
-            return; // Skip adding system message directly
+        } else if (msg.role === 'user' || msg.role === 'assistant') {
+            history.push(msg);
         }
-        newMessages.push(msg);
     });
 
-    if (newMessages.length > 0 && newMessages[0].role === 'user') {
-        newMessages[0].content = `${system_prompt}\n\nUser: ${newMessages[0].content}`;
-    }
-    
-    // Convert to Google's 'contents' format
-    return newMessages.map(msg => ({
-        role: msg.role === 'assistant' ? 'model' : 'user', // Google uses 'model' instead of 'assistant'
+    const contents = history.map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
         parts: [{ text: msg.content }]
     }));
+    
+    return { system_prompt, contents };
 }
 
 
@@ -44,7 +40,6 @@ app.post('/api/chat', async (req, res) => {
     try {
         let response;
 
-        // --- ADVANCED ROUTING LOGIC ---
         if (model.startsWith('google/')) {
             // --- HANDLE DIRECT GOOGLE API CALL ---
             const apiKey = process.env.GEMINI_API_KEY;
@@ -53,22 +48,29 @@ app.post('/api/chat', async (req, res) => {
             const googleModelName = model.split('/')[1];
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModelName}:generateContent?key=${apiKey}`;
 
-            const transformedMessages = transformMessagesForGoogle(messages);
+            // --- NEW --- Transform messages and build the request body
+            const { system_prompt, contents } = transformMessagesForGoogle(messages);
+            
+            const requestBody = { contents };
+            if (system_prompt) {
+                requestBody.systemInstruction = {
+                    role: "user", // The role for system instructions must be 'user'
+                    parts: [{ text: system_prompt }]
+                };
+            }
 
             response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contents: transformedMessages })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
                 const errorData = await response.json();
-                // Reformat Google's error to be consistent
                 throw new Error(errorData.error?.message || 'Unknown Google API Error');
             }
 
             const data = await response.json();
-            // Extract and re-package the response to match the format our frontend expects
             const reply = data.candidates[0].content.parts[0].text;
             return res.json({ choices: [{ message: { content: reply } }] });
 
@@ -81,10 +83,7 @@ app.post('/api/chat', async (req, res) => {
 
             response = await fetch(apiUrl, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: model, messages: messages })
             });
 
