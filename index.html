@@ -58,56 +58,74 @@
         .dark .chat-list-item.active { background-color: #374151; }
         .modal-transition { transition: opacity 0.2s ease, transform 0.2s ease; }
 
-           #auth-section { display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; }
-        .auth-container { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-        .dark .auth-container { background-color: #1f2937; } /* bg-gray-800 */
-        .auth-container input { width: calc(100% - 22px); padding: 11px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 6px; background-color: #f9fafb; } /* borders, bg-colors */
-        .dark .auth-container input { border-color: #4b5563; background-color: #374151; color: #e5e7eb; }
-        .auth-container button { width: 100%; padding: 12px; border: none; border-radius: 6px; color: white; background-color: #4f46e5; cursor: pointer; font-size: 16px; font-weight: 500; } /* bg-indigo-600 */
-        .auth-container button:hover { background-color: #4338ca; } /* hover:bg-indigo-700 */
-        .form-toggle { color: #4f46e5; cursor: pointer; text-decoration: underline; margin-top: 15px; font-size: 0.875rem; }
-        #error-message { color: #ef4444; margin-top: 15px; min-height: 20px; font-size: 0.875rem; }
     </style>
 </head>
 
 <!-- Line Before -->
-<body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100">
+<body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100">
 
-<!-- NEW Code to Add -->
+<!-- NEW Code to Add (This entirely replaces your old #auth-section) -->
     <!-- Authentication Section -->
-    <section id="auth-section">
-        <div class="auth-container">
-            <!-- Login Form -->
-            <div id="login-view">
-                <h2 class="text-2xl font-bold mb-6">Login to AI Chat Hub</h2>
-                <form id="login-form">
-                    <input type="email" id="login-email" placeholder="Email" required>
-                    <input type="password" id="login-password" placeholder="Password" required>
-                    <button type="submit">Login</button>
-                </form>
-                <p class="form-toggle" id="show-signup">Don't have an account? Sign Up</p>
+    <section id="auth-section" class="flex items-center justify-center w-full min-h-screen p-4">
+        <div class="w-full max-w-md mx-auto">
+            <div class="flex flex-col items-center justify-center mb-8">
+                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Welcome to AI Chat Hub</h1>
+                <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue your journey</p>
             </div>
 
-            <!-- Signup Form -->
-            <div id="signup-view" style="display: none;">
-                <h2 class="text-2xl font-bold mb-6">Create an Account</h2>
-                <form id="signup-form">
-                    <input type="email" id="signup-email" placeholder="Email" required>
-                    <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required>
-                    <button type="submit">Sign Up</button>
-                </form>
-                <p class="form-toggle" id="show-login">Already have an account? Login</p>
+            <div class="space-y-4">
+                <!-- Google Sign-in Button -->
+                <button id="google-signin-btn" class="w-full flex items-center justify-center py-3 px-4 bg-white dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.219,0-9.559-3.397-11.28-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                    <span class="font-medium text-gray-700 dark:text-gray-200">Sign in with Google</span>
+                </button>
+
+                <!-- "Or" Separator -->
+                <div class="flex items-center my-6">
+                    <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
+                    <span class="px-4 text-sm text-gray-500 dark:text-gray-400">or</span>
+                    <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
+                </div>
+
+                <!-- Email Login Container -->
+                <div class="bg-white dark:bg-slate-800/50 p-6 rounded-lg border border-gray-200 dark:border-slate-700">
+                    <div id="login-view">
+                        <form id="login-form" class="space-y-4">
+                            <input type="email" id="login-email" placeholder="Email Address" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <input type="password" id="login-password" placeholder="Password" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Login</button>
+                        </form>
+                        <p class="text-sm text-center mt-5" id="show-signup">Don't have an account? <a href="#" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Sign Up</a></p>
+                    </div>
+                    <div id="signup-view" style="display: none;">
+                        <form id="signup-form" class="space-y-4">
+                            <input type="email" id="signup-email" placeholder="Email Address" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Sign Up</button>
+                        </form>
+                         <p class="text-sm text-center mt-5" id="show-login">Already have an account? <a href="#" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Login</a></p>
+                    </div>
+                    <p id="error-message" class="text-center text-red-500 mt-4 min-h-[20px]"></p>
+                </div>
             </div>
-            
-            <p id="error-message"></p>
+
+            <!-- Continue as Guest Button -->
+            <div class="text-center mt-8">
+                <button id="guest-signin-btn" class="text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors focus:outline-none">Continue as Guest</button>
+            </div>
         </div>
     </section>
 
+<!-- Line After -->
     <!-- Main Chat App Container -->
     <div id="app-container" class="h-dvh flex overflow-hidden" style="display: none;">
 
     <!-- Sidebar for Chat History -->
-    <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 fixed md:static h-full z-20 sidebar">
+     <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full fixed md:static h-full z-20 sidebar md:translate-x-0">
+
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
             <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>New Chat
@@ -138,7 +156,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col w-full">
         <header class="bg-white dark:bg-gray-800 shadow-sm py-3 px-4 flex items-center justify-between z-10">
             <div class="flex items-center">
                 <button id="sidebarToggle" class="mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 md:hidden">
@@ -172,12 +190,12 @@
                 </button>
             </div>
             
-            <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-6 scrollbar-custom">
-                <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
+            <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-custom">
+            <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
             </div>
 
-            <div class="bg-white/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 p-4 backdrop-blur-sm">
-                <div class="max-w-3xl mx-auto">
+            <div class="bg-white/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 p-2 md:p-4 backdrop-blur-sm">
+            <div class="max-w-3xl mx-auto">
                     <div class="flex items-end bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
                         <textarea id="messageInput" class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none text-gray-900 dark:text-gray-200" placeholder="Message AI assistant..." rows="1"></textarea>
                         <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
@@ -213,6 +231,8 @@
 
      <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
 
     <script type="module">
 
