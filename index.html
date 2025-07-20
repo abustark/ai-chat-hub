@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Chat Hub | Multi-Model Assistant</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display.swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Libraries for Markdown and Code Highlighting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -67,7 +67,6 @@
             <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>New Chat
             </button>
-            <!-- NEW Search Bar -->
             <div class="relative">
                 <input type="search" id="searchChats" class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Search chats...">
                 <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
@@ -75,9 +74,15 @@
         </div>
         <nav id="chatList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-custom"></nav>
         <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center">
-                <img src="https://i.pravatar.cc/40" alt="User Avatar" class="w-8 h-8 rounded-full mr-3">
-                <span class="font-medium text-sm dark:text-gray-200">User</span>
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <img src="https://i.pravatar.cc/40" alt="User Avatar" class="w-8 h-8 rounded-full mr-3">
+                    <span class="font-medium text-sm dark:text-gray-200">User</span>
+                </div>
+                <!-- NEW Import Button -->
+                <button id="importChatBtn" title="Import Chat" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.295 8.235a.75.75 0 10-1.09 1.03l4.25 4.5a.75.75 0 001.09 0l4.25-4.5a.75.75 0 00-1.09-1.03l-2.955 3.129V2.75z" /><path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" /></svg>
+                </button>
             </div>
         </div>
     </aside>
@@ -150,6 +155,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- NEW Hidden file input for importing -->
+    <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
     <script>
         // --- CONFIGURATION ---
@@ -172,7 +180,7 @@
             modelSelectorBtn: document.getElementById('modelSelectorBtn'), modelSelectorLabel: document.getElementById('modelSelectorLabel'), modelSelectorPanel: document.getElementById('modelSelectorPanel'),
             promptBtn: document.getElementById('promptBtn'), promptModal: document.getElementById('promptModal'), promptOverlay: document.getElementById('promptOverlay'),
             promptPanel: document.getElementById('promptPanel'), promptTextarea: document.getElementById('promptTextarea'), promptSaveBtn: document.getElementById('promptSaveBtn'), promptCancelBtn: document.getElementById('promptCancelBtn'),
-            searchChats: document.getElementById('searchChats') // --- NEW ---
+            searchChats: document.getElementById('searchChats'), importChatBtn: document.getElementById('importChatBtn'), importFileInput: document.getElementById('importFileInput')
         };
 
         // --- STATE MANAGEMENT ---
@@ -193,27 +201,48 @@
             buttons.forEach(button => { button.classList.remove(...colorClasses, 'bg-indigo-600'); button.classList.remove(...hoverClasses, 'hover:bg-indigo-700'); button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`); });
         };
 
-        const openPromptModal = () => {
-            if (!activeChatId) return;
-            dom.promptTextarea.value = chats[activeChatId].systemPrompt;
-            dom.promptModal.classList.remove('hidden');
-            setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10);
-        };
-        const closePromptModal = () => {
-            dom.promptPanel.style.opacity = '0';
-            dom.promptPanel.style.transform = 'scale(0.95)';
-            setTimeout(() => dom.promptModal.classList.add('hidden'), 200);
-        };
-        const saveSystemPrompt = () => {
-            if (!activeChatId) return;
-            chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim();
-            saveChats();
-            closePromptModal();
+        const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
+        const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
+        const saveSystemPrompt = () => { if (!activeChatId) return; chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim(); saveChats(); closePromptModal(); };
+        const renameChat = (chatId, newName) => { if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); } };
+        
+        // --- NEW Export / Import Logic ---
+        const exportChat = (chatId) => {
+            if (!chats[chatId]) return;
+            const chat = chats[chatId];
+            const jsonString = JSON.stringify(chat, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const safeName = chat.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            a.download = `abot_chat_${safeName}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         };
 
-        const renameChat = (chatId, newName) => {
-            if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); }
+        const importChat = (file) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const importedChat = JSON.parse(e.target.result);
+                    if (importedChat.id && importedChat.name && Array.isArray(importedChat.messages)) {
+                        importedChat.id = Date.now(); // Assign a new unique ID to prevent conflicts
+                        chats[importedChat.id] = importedChat;
+                        saveChats();
+                        switchChat(importedChat.id);
+                    } else {
+                        alert('Invalid chat file format.');
+                    }
+                } catch (err) {
+                    alert('Could not parse chat file. Please make sure it is a valid JSON file.');
+                }
+            };
+            reader.readAsText(file);
         };
+
         const deleteChat = (chatId) => {
             if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
             const isDeletingActiveChat = chatId === activeChatId;
@@ -231,17 +260,14 @@
             }
         };
 
-        // --- NEW --- Updated renderChatList function with search
         const renderChatList = (searchTerm = '') => {
             dom.chatList.innerHTML = '';
-            const filteredChats = Object.values(chats).filter(chat => 
-                chat.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-
+            const filteredChats = Object.values(chats).filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
             filteredChats.sort((a,b) => b.id - a.id).forEach(chat => {
                 const chatItemContainer = document.createElement('div');
                 chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
+                // --- NEW --- Added Export button to the menu
+                chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="export-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Export</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
                 const nameSpan = chatItemContainer.querySelector('.chat-name-span');
                 const renameInput = chatItemContainer.querySelector('.chat-rename-input');
                 const saveRename = () => { renameChat(chat.id, renameInput.value); nameSpan.classList.remove('hidden'); renameInput.classList.add('hidden'); };
@@ -250,22 +276,21 @@
                 chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
                 chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
                 chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
+                chatItemContainer.querySelector('.export-chat-btn').addEventListener('click', e => { e.stopPropagation(); exportChat(chat.id); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
                 chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
                 dom.chatList.appendChild(chatItemContainer);
             });
         };
 
         const renderActiveChat = () => {
-            const chat = chats[activeChatId];
-            if (!chat) return;
-            dom.chatHistory.innerHTML = '';
-            chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
+            const chat = chats[activeChatId]; if (!chat) return;
+            dom.chatHistory.innerHTML = ''; chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
             dom.modelSelectorLabel.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
             dom.modelIndicatorPill.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
             applyModelColorTheme(MODEL_CONFIG[chat.model]?.color);
         };
         
-        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(); closeSidebar(); };
+        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
         const createNewChat = () => {
             const newChatId = Date.now();
             chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
@@ -277,58 +302,47 @@
         };
 
         const appendMessage = (sender, text, isHistory = false) => {
-            const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant';
-            const isUser = role === 'user';
-            const currentChat = chats[activeChatId];
-            if (!currentChat) return;
+            const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; const isUser = role === 'user';
+            const currentChat = chats[activeChatId]; if (!currentChat) return;
             const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
             const userBubbleColor = `bg-${modelConf.color}`;
             const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
             const justifyClass = isUser ? 'justify-end' : 'justify-start';
             const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
-            const messageEl = document.createElement('div');
-            if (!isHistory) messageEl.className = 'message-enter';
+            const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
             let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
             messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
             dom.chatHistory.appendChild(messageEl);
             if (!isUser) {
                 messageEl.querySelectorAll('pre code').forEach(block => {
-                    const pre = block.parentElement;
-                    const copyBtn = document.createElement('button');
+                    const pre = block.parentElement; const copyBtn = document.createElement('button');
                     copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
                     copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
-                    pre.appendChild(copyBtn);
-                    hljs.highlightElement(block);
+                    pre.appendChild(copyBtn); hljs.highlightElement(block);
                 });
             }
             dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
         };
         
         const showTypingIndicator = () => {
-            const currentChat = chats[activeChatId];
-            if (!currentChat) return;
+            const currentChat = chats[activeChatId]; if (!currentChat) return;
             const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-            const indicator = document.createElement('div');
-            indicator.id = 'typingIndicator';
+            const indicator = document.createElement('div'); indicator.id = 'typingIndicator';
             indicator.innerHTML = `<div class="flex items-start justify-start"><div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div><div class="bot-bubble bg-white dark:bg-gray-700 shadow-sm chat-bubble p-4"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-            dom.chatHistory.appendChild(indicator);
-            dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+            dom.chatHistory.appendChild(indicator); dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
         };
         
         const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
 
         const sendMessage = async () => {
-            const message = dom.messageInput.value.trim();
-            if (!message) return;
-            const currentChat = chats[activeChatId];
-            appendMessage('user', message);
+            const message = dom.messageInput.value.trim(); if (!message) return;
+            const currentChat = chats[activeChatId]; appendMessage('user', message);
             currentChat.messages.push({ role: 'user', content: message });
             if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
                 currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
                 renderChatList();
             }
-            dom.messageInput.value = '';
-            dom.messageInput.style.height = 'auto';
+            dom.messageInput.value = ''; dom.messageInput.style.height = 'auto';
             showTypingIndicator();
             const messagesToSend = [ { role: 'system', content: currentChat.systemPrompt }, ...currentChat.messages.filter(m => m.role !== 'system').slice(-10) ];
             try {
@@ -377,10 +391,15 @@
             dom.promptOverlay.addEventListener('click', closePromptModal);
             dom.promptCancelBtn.addEventListener('click', closePromptModal);
             dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
-            
-            // --- NEW --- Event listener for the search bar
-            dom.searchChats.addEventListener('input', (e) => {
-                renderChatList(e.target.value);
+            dom.searchChats.addEventListener('input', (e) => { renderChatList(e.target.value); });
+
+            // --- NEW --- Event listeners for Import
+            dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
+            dom.importFileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    importChat(e.target.files[0]);
+                }
+                e.target.value = null; // Reset input so you can import the same file again
             });
         };
 
