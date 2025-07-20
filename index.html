@@ -260,7 +260,7 @@
             const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
             const messageEl = document.createElement('div');
             if (!isHistory) messageEl.className = 'message-enter';
-            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text)}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
+            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text)}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>;
             dom.chatHistory.appendChild(messageEl);
             if (!isUser) {
                 messageEl.querySelectorAll('pre code').forEach(block => {
