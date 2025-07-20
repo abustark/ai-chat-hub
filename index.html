@@ -59,350 +59,187 @@
         .dark .chat-list-item.active { background-color: #374151; }
         .modal-transition { transition: opacity 0.2s ease, transform 0.2s ease; }
     </style>
+/* Line Before */
 </head>
-<body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-dvh flex overflow-hidden">
-    <!-- Sidebar for Chat History -->
-    <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 fixed md:static h-full z-20 sidebar">
-        <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
-            <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>New Chat
-            </button>
-            <div class="relative">
-                <input type="search" id="searchChats" class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Search chats...">
-                <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-            </div>
-        </div>
-        <nav id="chatList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-custom"></nav>
-        <div class="p-4 border-t border-gray-200 dark:border-gray-700">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center">
-                    <img src="https://i.pravatar.cc/40" alt="User Avatar" class="w-8 h-8 rounded-full mr-3">
-                    <span class="font-medium text-sm dark:text-gray-200">User</span>
-                </div>
-                <!-- NEW Import Button -->
-                 <button id="importChatBtn" title="Import Chat" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-            <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636V13.25z" /><path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" /></svg>
-        </button>
-            </div>
-        </div>
-    </aside>
 
-    <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col">
-        <header class="bg-white dark:bg-gray-800 shadow-sm py-3 px-4 flex items-center justify-between z-10">
-            <div class="flex items-center">
-                <button id="sidebarToggle" class="mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 md:hidden">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
-                </button>
-                <div class="flex items-center">
-                    <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg></div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">AI Chat Hub</h1>
+/* NEW Code to Add (Replace your entire <body> tag with this) */
+<body class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 h-dvh flex overflow-hidden">
+    
+    <div id="loginScreen" class="w-full h-full flex items-center justify-center">
+        <div class="text-center p-8 bg-white dark:bg-gray-900 rounded-lg shadow-xl">
+            <h1 class="text-2xl font-bold mb-2">Welcome to ABot</h1>
+            <p class="text-gray-500 mb-6">Please sign in to continue.</p>
+            <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center mx-auto"><svg class="w-5 h-5 mr-2" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.3 1.62-3.9 1.62-3.03 0-5.48-2.22-5.48-5s2.45-5 5.48-5c1.62 0 2.85.62 3.8 1.5l2.6-2.6C19.1 4.5 16.1 3 12.48 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c4.97 0 9-4.03 9-9 0-1.45-.15-2.65-.4-3.6H12.48z" fill="#fff"/></svg>Sign In with Google</button>
+        </div>
+    </div>
+    
+    <div id="mainApp" class="w-full h-full flex hidden">
+        <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full md:translate-x-0 fixed md:static h-full z-20 sidebar">
+            <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
+                <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">New Chat</button>
+                <div class="relative"><input type="search" id="searchChats" class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-gray-800" placeholder="Search chats..."><svg class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg></div>
+            </div>
+            <nav id="chatList" class="flex-1 overflow-y-auto p-2 space-y-1 scrollbar-custom"></nav>
+            <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <img id="userAvatar" src="" class="w-8 h-8 rounded-full mr-3">
+                        <span id="userName" class="font-medium text-sm dark:text-gray-200 truncate"></span>
+                    </div>
+                    <div class="flex items-center space-x-1">
+                        <button id="importChatBtn" title="Import Chat" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><svg class="w-5 h-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path d="M9.25 13.25a.75.75 0 001.5 0V4.636l2.955 3.129a.75.75 0 001.09-1.03l-4.25-4.5a.75.75 0 00-1.09 0l-4.25 4.5a.75.75 0 101.09 1.03L9.25 4.636V13.25z" /><path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5z" /></svg></button>
+                        <button id="logoutBtn" title="Logout" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><svg class="w-5 h-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg></button>
+                    </div>
                 </div>
             </div>
-            <div class="flex items-center space-x-2 p-1 rounded-full bg-gray-200 dark:bg-gray-700/50">
-                <div id="modelIndicatorPill" class="flex items-center pl-3 pr-2 py-1 text-sm font-medium"></div>
-                <button id="themeToggle" class="p-1.5 rounded-full bg-white dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-600/80 transition-colors">
-                    <svg id="sunIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" /></svg>
-                    <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-300 hidden" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-                </button>
-            </div>
-        </header>
-        
+        </aside>
         <main class="flex-1 flex flex-col overflow-hidden min-h-0">
             <div class="px-6 pt-4 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                 <div class="relative">
-                    <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-lg font-semibold focus:outline-none">
-                       <span id="modelSelectorLabel"></span>
-                       <svg class="w-5 h-5 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </button>
+                    <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-lg font-semibold focus:outline-none"><span id="modelSelectorLabel"></span><svg class="w-5 h-5 ml-2 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg></button>
                     <div id="modelSelectorPanel" class="modal-transition absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
                 </div>
-                <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
-                    <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
-                </button>
+                <div class="flex items-center space-x-2 p-1 rounded-full bg-gray-200 dark:bg-gray-700/50">
+                    <div id="modelIndicatorPill" class="flex items-center pl-3 pr-2 py-1 text-sm font-medium"></div>
+                    <button id="themeToggle" class="p-1.5 rounded-full bg-white dark:bg-gray-800/80 hover:bg-gray-100 dark:hover:bg-gray-600/80 transition-colors"></button>
+                    <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"><svg class="w-5 h-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg></button>
+                </div>
             </div>
-            
-            <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-6 scrollbar-custom">
-                <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
-            </div>
-
+            <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-6 scrollbar-custom"><div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div></div>
             <div class="bg-white/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 p-4 backdrop-blur-sm">
                 <div class="max-w-3xl mx-auto">
                     <div class="flex items-end bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
                         <textarea id="messageInput" class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none text-gray-900 dark:text-gray-200" placeholder="Message AI assistant..." rows="1"></textarea>
-                        <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" /></svg>
-                        </button>
-                        <button id="sendBtn" class="p-2 text-white rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
-                        </button>
+                        <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" /></svg></button>
+                        <button id="sendBtn" class="p-2 text-white rounded-lg transition-colors"><svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg></button>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+    
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
-
     <div id="promptModal" class="fixed inset-0 z-30 flex items-center justify-center hidden">
         <div id="promptOverlay" class="absolute inset-0 bg-black/50"></div>
-        <div id="promptPanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6" style="transform: scale(0.95); opacity: 0;">
-            <h2 class="text-lg font-semibold mb-4">Custom System Prompt</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Define the AI's personality and instructions for this chat session.</p>
-            <textarea id="promptTextarea" class="w-full h-40 p-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g., You are a sarcastic pirate..."></textarea>
-            <div class="mt-4 flex justify-end space-x-2">
-                <button id="promptCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
-                <button id="promptSaveBtn" class="px-4 py-2 rounded-md bg-indigo-600 hover:bg-indigo-700 text-white">Save</button>
-            </div>
-        </div>
+        <div id="promptPanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6" style="transform: scale(0.95); opacity: 0;"><h2 class="text-lg font-semibold mb-4">Custom System Prompt</h2><textarea id="promptTextarea" class="w-full h-40 p-2 border rounded-md bg-gray-100 dark:bg-gray-700" placeholder="e.g., You are a sarcastic pirate..."></textarea><div class="mt-4 flex justify-end space-x-2"><button id="promptCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600">Cancel</button><button id="promptSaveBtn" class="px-4 py-2 rounded-md bg-indigo-600 text-white">Save</button></div></div>
     </div>
-    
-    <!-- NEW Hidden file input for importing -->
+    /* Line Before */
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
-    <script>
-        // --- CONFIGURATION ---
+/* NEW Code to Add (Replace your entire <script> tag with this) */
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    
+    // --- PASTE YOUR FIREBASE CONFIG OBJECT HERE ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyBXgaTb9XFlDS491i765UFBe325Qg4z0QE",
+        authDomain: "abot-cloud.firebaseapp.com",
+        projectId: "abot-cloud",
+        storageBucket: "abot-cloud.firebasestorage.app",
+        messagingSenderId: "784623545561",
+        appId: "1:784623545561:web:74a3ba27805e005d7ca2c8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+    let currentUser = null;
+    let appInitialized = false;
+
+    const staticDom = {
+        loginScreen: document.getElementById('loginScreen'),
+        mainApp: document.getElementById('mainApp'),
+        loginBtn: document.getElementById('loginBtn'),
+    };
+    
+    staticDom.loginBtn.addEventListener('click', () => signInWithPopup(auth, provider).catch(err => console.error("Login failed:", err)));
+
+    onAuthStateChanged(auth, user => {
+        if (user) {
+            currentUser = user;
+            staticDom.loginScreen.classList.add('hidden');
+            staticDom.mainApp.classList.remove('hidden');
+            if (!appInitialized) {
+                initApp(user);
+                appInitialized = true;
+            }
+        } else {
+            currentUser = null;
+            appInitialized = false;
+            staticDom.loginScreen.classList.remove('hidden');
+            staticDom.mainApp.classList.add('hidden');
+        }
+    });
+
+    function initApp(user) {
+        const dom = Object.fromEntries([...document.querySelectorAll('[id]')].map(e => [e.id, e]));
+        dom.userName.textContent = user.displayName;
+        dom.userAvatar.src = user.photoURL;
+        dom.logoutBtn.addEventListener('click', () => signOut(auth));
+
         const MODEL_CONFIG = {
-            'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' },
-            'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' },
-            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' },
-            'qwen/qwen3-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
-            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
+            'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' }, 'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' }, 'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' }, 'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' }, 'qwen/qwen3-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' }, 'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
         };
-
-        // --- DOM Elements ---
-        const dom = {
-            themeToggle: document.getElementById('themeToggle'), sunIcon: document.getElementById('sunIcon'), moonIcon: document.getElementById('moonIcon'),
-            messageInput: document.getElementById('messageInput'), sendBtn: document.getElementById('sendBtn'), chatHistoryContainer: document.getElementById('chatHistoryContainer'),
-            chatHistory: document.getElementById('chatHistory'), sidebar: document.getElementById('sidebar'), sidebarToggle: document.getElementById('sidebarToggle'),
-            sidebarOverlay: document.getElementById('sidebarOverlay'), voiceBtn: document.getElementById('voiceBtn'), newChatBtn: document.getElementById('newChatBtn'),
-            chatList: document.getElementById('chatList'), modelIndicatorPill: document.getElementById('modelIndicatorPill'),
-            modelSelectorBtn: document.getElementById('modelSelectorBtn'), modelSelectorLabel: document.getElementById('modelSelectorLabel'), modelSelectorPanel: document.getElementById('modelSelectorPanel'),
-            promptBtn: document.getElementById('promptBtn'), promptModal: document.getElementById('promptModal'), promptOverlay: document.getElementById('promptOverlay'),
-            promptPanel: document.getElementById('promptPanel'), promptTextarea: document.getElementById('promptTextarea'), promptSaveBtn: document.getElementById('promptSaveBtn'), promptCancelBtn: document.getElementById('promptCancelBtn'),
-            searchChats: document.getElementById('searchChats'), importChatBtn: document.getElementById('importChatBtn'), importFileInput: document.getElementById('importFileInput')
-        };
-
-        // --- STATE MANAGEMENT ---
-        let chats = {};
-        let activeChatId = null;
-
-        // --- FUNCTIONS ---
-        const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
-        const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
+        let chats = {}; let activeChatId = null;
+        
+        const saveChats = () => localStorage.setItem(`chats_${user.uid}`, JSON.stringify(chats));
+        const loadChats = () => JSON.parse(localStorage.getItem(`chats_${user.uid}`) || '{}');
         const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
         
-        const applyModelColorTheme = (colorName) => {
-            if (!colorName) return;
-            const buttons = [dom.newChatBtn, dom.sendBtn];
-            const colorClasses = Object.values(MODEL_CONFIG).map(m => `bg-${m.color}`);
-            const hoverClasses = Object.values(MODEL_CONFIG).map(m => `hover:bg-${m.color}/90`);
-            buttons.forEach(button => { button.classList.remove(...colorClasses, 'bg-indigo-600'); button.classList.remove(...hoverClasses, 'hover:bg-indigo-700'); button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`); });
-        };
-
+        const applyModelColorTheme = (c) => { if (!c) return; const btns = [dom.newChatBtn, dom.sendBtn]; const ccs = Object.values(MODEL_CONFIG).map(m => `bg-${m.color}`); const hcs = Object.values(MODEL_CONFIG).map(m => `hover:bg-${m.color}/90`); btns.forEach(b => { b.classList.remove(...ccs, 'bg-indigo-600'); b.classList.remove(...hcs, 'hover:bg-indigo-700'); b.classList.add(`bg-${c}`, `hover:bg-${c}/90`); }); };
         const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
         const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
         const saveSystemPrompt = () => { if (!activeChatId) return; chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim(); saveChats(); closePromptModal(); };
-        const renameChat = (chatId, newName) => { if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); } };
+        const renameChat = (id, n) => { if (chats[id] && n.trim()) { chats[id].name = n.trim(); saveChats(); renderChatList(dom.searchChats.value); } };
+        const exportChat = (id) => { if (!chats[id]) return; const c = chats[id]; const j = JSON.stringify(c, null, 2); const b = new Blob([j], { type: 'application/json' }); const u = URL.createObjectURL(b); const a = document.createElement('a'); a.href = u; a.download = `abot_chat_${c.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.json`; document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(u); };
+        const importChat = (f) => { const r = new FileReader(); r.onload = (e) => { try { const i = JSON.parse(e.target.result); if (i.id && i.name && Array.isArray(i.messages)) { i.id = Date.now(); chats[i.id] = i; saveChats(); switchChat(i.id); } else { alert('Invalid chat file format.'); } } catch (err) { alert('Could not parse chat file.'); } }; r.readAsText(f); };
+        const deleteChat = (id) => { if (!chats[id] || !confirm(`Delete "${chats[id].name}"?`)) return; const d = id === activeChatId; delete chats[id]; saveChats(); if (d) { const r = Object.keys(chats); if (r.length > 0) { switchChat(Math.max(...r.map(Number))); } else { createNewChat(); } } else { renderChatList(dom.searchChats.value); } };
         
-        // --- NEW Export / Import Logic ---
-        const exportChat = (chatId) => {
-            if (!chats[chatId]) return;
-            const chat = chats[chatId];
-            const jsonString = JSON.stringify(chat, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const safeName = chat.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            a.download = `abot_chat_${safeName}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        };
-
-        const importChat = (file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedChat = JSON.parse(e.target.result);
-                    if (importedChat.id && importedChat.name && Array.isArray(importedChat.messages)) {
-                        importedChat.id = Date.now(); // Assign a new unique ID to prevent conflicts
-                        chats[importedChat.id] = importedChat;
-                        saveChats();
-                        switchChat(importedChat.id);
-                    } else {
-                        alert('Invalid chat file format.');
-                    }
-                } catch (err) {
-                    alert('Could not parse chat file. Please make sure it is a valid JSON file.');
-                }
-            };
-            reader.readAsText(file);
-        };
-
-        const deleteChat = (chatId) => {
-            if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
-            const isDeletingActiveChat = chatId === activeChatId;
-            delete chats[chatId];
-            saveChats();
-            if (isDeletingActiveChat) {
-                const remainingChatIds = Object.keys(chats);
-                if (remainingChatIds.length > 0) {
-                    switchChat(Math.max(...remainingChatIds.map(Number)));
-                } else {
-                    createNewChat();
-                }
-            } else {
-                 renderChatList();
-            }
-        };
-
-        const renderChatList = (searchTerm = '') => {
-            dom.chatList.innerHTML = '';
-            const filteredChats = Object.values(chats).filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            filteredChats.sort((a,b) => b.id - a.id).forEach(chat => {
-                const chatItemContainer = document.createElement('div');
-                chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                // --- NEW --- Added Export button to the menu
-                chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="export-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Export</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
-                const nameSpan = chatItemContainer.querySelector('.chat-name-span');
-                const renameInput = chatItemContainer.querySelector('.chat-rename-input');
-                const saveRename = () => { renameChat(chat.id, renameInput.value); nameSpan.classList.remove('hidden'); renameInput.classList.add('hidden'); };
-                renameInput.addEventListener('keydown', e => e.key === 'Enter' && saveRename());
-                renameInput.addEventListener('blur', saveRename);
-                chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
-                chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
-                chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
-                chatItemContainer.querySelector('.export-chat-btn').addEventListener('click', e => { e.stopPropagation(); exportChat(chat.id); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
-                chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
-                dom.chatList.appendChild(chatItemContainer);
-            });
-        };
-
-        const renderActiveChat = () => {
-            const chat = chats[activeChatId]; if (!chat) return;
-            dom.chatHistory.innerHTML = ''; chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
-            dom.modelSelectorLabel.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
-            dom.modelIndicatorPill.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
-            applyModelColorTheme(MODEL_CONFIG[chat.model]?.color);
-        };
-        
-        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
-        const createNewChat = () => {
-            const newChatId = Date.now();
-            chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
-            activeChatId = newChatId;
-            saveChats();
-            renderChatList();
-            renderActiveChat();
-            closeSidebar();
-        };
-
-        const appendMessage = (sender, text, isHistory = false) => {
-            const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; const isUser = role === 'user';
-            const currentChat = chats[activeChatId]; if (!currentChat) return;
-            const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-            const userBubbleColor = `bg-${modelConf.color}`;
-            const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
-            const justifyClass = isUser ? 'justify-end' : 'justify-start';
-            const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
-            const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
-            let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
-            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
-            dom.chatHistory.appendChild(messageEl);
-            if (!isUser) {
-                messageEl.querySelectorAll('pre code').forEach(block => {
-                    const pre = block.parentElement; const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
-                    copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
-                    pre.appendChild(copyBtn); hljs.highlightElement(block);
-                });
-            }
-            dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-        };
-        
-        const showTypingIndicator = () => {
-            const currentChat = chats[activeChatId]; if (!currentChat) return;
-            const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-            const indicator = document.createElement('div'); indicator.id = 'typingIndicator';
-            indicator.innerHTML = `<div class="flex items-start justify-start"><div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div><div class="bot-bubble bg-white dark:bg-gray-700 shadow-sm chat-bubble p-4"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-            dom.chatHistory.appendChild(indicator); dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-        };
-        
+        const renderChatList = (s = '') => { dom.chatList.innerHTML = ''; const f = Object.values(chats).filter(c => c.name.toLowerCase().includes(s.toLowerCase())); f.sort((a,b) => b.id - a.id).forEach(c => { const i = document.createElement('div'); i.className = `relative chat-list-item group ${c.id === activeChatId ? 'active' : ''}`; i.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${c.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${c.id}"><span class="chat-name-span">${c.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${c.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="export-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Export</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`; const n = i.querySelector('.chat-name-span'); const p = i.querySelector('.chat-rename-input'); const sv = () => { renameChat(c.id, p.value); n.classList.remove('hidden'); p.classList.add('hidden'); }; p.addEventListener('keydown', e => e.key === 'Enter' && sv()); p.addEventListener('blur', sv); i.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(c.id); }); i.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const m = i.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(x => x !== m && x.classList.add('hidden')); m.classList.toggle('hidden'); }); i.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); n.classList.add('hidden'); p.classList.remove('hidden'); p.focus(); p.select(); i.querySelector('.chat-options-menu').classList.add('hidden'); }); i.querySelector('.export-chat-btn').addEventListener('click', e => { e.stopPropagation(); exportChat(c.id); i.querySelector('.chat-options-menu').classList.add('hidden'); }); i.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(c.id); }); dom.chatList.appendChild(i); }); };
+        const renderActiveChat = () => { const c = chats[activeChatId]; if (!c) return; dom.chatHistory.innerHTML = ''; c.messages.forEach(m => appendMessage(m.role, m.content, true)); dom.modelSelectorLabel.textContent = MODEL_CONFIG[c.model]?.name || 'Select'; dom.modelIndicatorPill.textContent = MODEL_CONFIG[c.model]?.name || 'Select'; applyModelColorTheme(MODEL_CONFIG[c.model]?.color); };
+        const switchChat = (id) => { activeChatId = id; renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
+        const createNewChat = () => { const id = Date.now(); chats[id] = { id: id, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] }; activeChatId = id; saveChats(); renderChatList(); renderActiveChat(); closeSidebar(); };
+        const appendMessage = (s, t, h = false) => { const r = (s === 'user' || s === 'assistant') ? s : 'assistant'; const u = r === 'user'; const c = chats[activeChatId]; if (!c) return; const m = MODEL_CONFIG[c.model] || { name: 'AI', color: 'indigo-600' }; const b = `bg-${m.color}`; const cls = u ? `user-bubble ${b} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`; const j = u ? 'justify-end' : 'justify-start'; const a = u ? `<img src="${currentUser.photoURL}" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${m.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${m.name.substring(0,2)}</span></div>`; const e = document.createElement('div'); if (!h) e.className = 'message-enter'; let cnt = u ? t.replace(/</g, "<").replace(/>/g, ">") : marked.parse(t); e.innerHTML = `<div class="flex items-start ${j}">${u ? '' : a}<div class="${cls} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${cnt}</div>${h ? '' : `<div class="text-xs ${u ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${u ? a : ''}</div>`; dom.chatHistory.appendChild(e); if (!u) { e.querySelectorAll('pre code').forEach(k => { const p = k.parentElement; const btn = document.createElement('button'); btn.className = 'copy-code-btn'; btn.textContent = 'Copy'; btn.addEventListener('click', () => { navigator.clipboard.writeText(k.textContent).then(() => { btn.textContent = 'Copied!'; setTimeout(() => { btn.textContent = 'Copy'; }, 2000); }); }); p.appendChild(btn); hljs.highlightElement(k); }); } dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight; };
+        const showTypingIndicator = () => { const c = chats[activeChatId]; if (!c) return; const m = MODEL_CONFIG[c.model] || { name: 'AI', color: 'indigo-600' }; const i = document.createElement('div'); i.id = 'typingIndicator'; i.innerHTML = `<div class="flex items-start justify-start"><div class="w-8 h-8 rounded-full bg-${m.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${m.name.substring(0,2)}</span></div><div class="bot-bubble bg-white dark:bg-gray-700 shadow-sm chat-bubble p-4"><div>...</div></div></div>`; dom.chatHistory.appendChild(i); dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight; };
         const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
-
         const sendMessage = async () => {
-            const message = dom.messageInput.value.trim(); if (!message) return;
-            const currentChat = chats[activeChatId]; appendMessage('user', message);
-            currentChat.messages.push({ role: 'user', content: message });
-            if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
-                currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
-                renderChatList();
-            }
-            dom.messageInput.value = ''; dom.messageInput.style.height = 'auto';
-            showTypingIndicator();
-            const messagesToSend = [ { role: 'system', content: currentChat.systemPrompt }, ...currentChat.messages.filter(m => m.role !== 'system').slice(-10) ];
+            const msg = dom.messageInput.value.trim(); if (!msg || !currentUser) return;
+            const chat = chats[activeChatId]; appendMessage('user', msg); chat.messages.push({ role: 'user', content: msg });
+            if (chat.name === "New Chat") { chat.name = msg.substring(0, 30) + (msg.length > 30 ? '...' : ''); renderChatList(dom.searchChats.value); }
+            dom.messageInput.value = ''; dom.messageInput.style.height = 'auto'; showTypingIndicator();
+            const idToken = await currentUser.getIdToken();
+            const messagesToSend = [ { role: 'system', content: chat.systemPrompt }, ...chat.messages.slice(-10) ];
             try {
-                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) });
+                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` }, body: JSON.stringify({ model: chat.model, messages: messagesToSend }) });
                 removeTypingIndicator();
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
-                    appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-                } else {
-                    const data = await res.json();
-                    const reply = data.choices[0].message.content;
-                    appendMessage('bot', reply); currentChat.messages.push({ role: 'assistant', content: reply });
-                }
-            } catch (error) {
-                removeTypingIndicator();
-                const errorMsg = `<strong>Network Error:</strong> Could not connect to the server.`;
-                appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-            } finally {
-                saveChats();
-            }
+                if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || 'Unknown API Error'); }
+                const data = await res.json(); const reply = data.choices[0].message.content;
+                appendMessage('bot', reply); chat.messages.push({ role: 'assistant', content: reply });
+            } catch (error) { removeTypingIndicator(); appendMessage('bot', `<strong>Error:</strong> ${error.message}`); chat.messages.push({ role: 'assistant', content: `Error: ${error.message}` }); } finally { saveChats(); }
         };
         
-        const init = () => {
-            if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
-            dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
-            Object.keys(MODEL_CONFIG).forEach(key => {
-                const model = MODEL_CONFIG[key]; const optionEl = document.createElement('a'); optionEl.href = '#';
-                optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
-                optionEl.textContent = model.name; optionEl.dataset.modelKey = key;
-                optionEl.addEventListener('click', e => { e.preventDefault(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); });
-                dom.modelSelectorPanel.appendChild(optionEl);
-            });
-            dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; });
-            document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
-            chats = loadChats();
-            if (Object.keys(chats).length === 0) { createNewChat(); } else { switchChat(Math.max(...Object.keys(chats).map(Number))); }
-            dom.newChatBtn.addEventListener('click', createNewChat);
-            dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
-            dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
-            dom.sendBtn.addEventListener('click', sendMessage);
-            dom.voiceBtn.addEventListener('click', () => { const recognition = new (window.SpeechRecognition || window.webkitRecognition)(); if (!recognition) return alert("Speech Recognition not supported."); dom.voiceBtn.classList.add('voice-pulse'); recognition.lang = 'en-US'; recognition.start(); recognition.onresult = e => { dom.messageInput.value = e.results[0][0].transcript; sendMessage(); }; recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse'); });
-            dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
-            dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
-            dom.promptBtn.addEventListener('click', openPromptModal);
-            dom.promptOverlay.addEventListener('click', closePromptModal);
-            dom.promptCancelBtn.addEventListener('click', closePromptModal);
-            dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
-            dom.searchChats.addEventListener('input', (e) => { renderChatList(e.target.value); });
-
-           dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
-dom.importFileInput.addEventListener('change', (e) => {
-    if (e.target.files.length > 0) {
-        importChat(e.target.files[0]);
+        dom.logoutBtn.addEventListener('click', () => signOut(auth));
+        dom.themeToggle.addEventListener('click', () => { document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', document.documentElement.classList.contains('dark')); });
+        if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); }
+        Object.keys(MODEL_CONFIG).forEach(key => { const model = MODEL_CONFIG[key]; const opt = document.createElement('a'); opt.href = '#'; opt.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'; opt.textContent = model.name; opt.dataset.modelKey = key; opt.addEventListener('click', e => { e.preventDefault(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); }); dom.modelSelectorPanel.appendChild(opt); });
+        dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; });
+        document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
+        chats = loadChats();
+        if (Object.keys(chats).length === 0) { createNewChat(); } else { switchChat(Math.max(...Object.keys(chats).map(Number))); }
+        dom.newChatBtn.addEventListener('click', createNewChat);
+        dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
+        dom.sendBtn.addEventListener('click', sendMessage);
+        dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
+        dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
+        dom.promptBtn.addEventListener('click', openPromptModal);
+        dom.promptOverlay.addEventListener('click', closePromptModal);
+        dom.promptCancelBtn.addEventListener('click', closePromptModal);
+        dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
+        dom.searchChats.addEventListener('input', e => renderChatList(e.target.value));
+        dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
+        dom.importFileInput.addEventListener('change', e => { if (e.target.files.length > 0) { importChat(e.target.files[0]); } e.target.value = null; });
     }
-    e.target.value = null
-});
-        };
-
-        document.addEventListener('DOMContentLoaded', init);
-    </script>
+</script>
 </body>
 </html>

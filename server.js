@@ -3,7 +3,19 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const admin = require('firebase-admin');
 
+// --- Firebase Admin Initialization ---
+try {
+    const serviceAccount = require('./service-account-key.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount)
+    });
+    console.log("Firebase Admin SDK initialized successfully.");
+} catch (error) {
+    console.error("CRITICAL ERROR: Could not initialize Firebase Admin SDK. Make sure 'service-account-key.json' is in the root directory.", error);
+    process.exit(1);
+}
 const app = express();
 const port = 3000;
 
@@ -11,87 +23,65 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname));
 
-// --- NEW, ROBUST Google message transformer ---
-function transformMessagesForGoogle(messages) {
-    let system_prompt = null;
-    const history = [];
-    
-    // Separate the system prompt from the conversation history
-    messages.forEach(msg => {
-        if (msg.role === 'system' && msg.content) {
-            system_prompt = msg.content;
-        } else if (msg.role === 'user' || msg.role === 'assistant') {
-            history.push(msg);
+const checkAuth = async (req, res, next) => {
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+        const idToken = req.headers.authorization.split('Bearer ')[1];
+        try {
+            const decodedToken = await admin.auth().verifyIdToken(idToken);
+            req.user = decodedToken;
+            return next();
+        } catch (error) {
+            console.error('Error while verifying Firebase ID token:', error);
+            return res.status(403).send({ error: 'Unauthorized: Invalid token.' });
         }
-    });
+    } else {
+        return res.status(401).send({ error: 'Unauthorized: No token provided.' });
+    }
+};
 
-    const contents = history.map(msg => ({
-        role: msg.role === 'assistant' ? 'model' : 'user',
-        parts: [{ text: msg.content }]
-    }));
-    
-    return { system_prompt, contents };
-}
-
-
-app.post('/api/chat', async (req, res) => {
+app.post('/api/chat', checkAuth, async (req, res) => {
     const { model, messages } = req.body;
-
     try {
-        let response;
-
         if (model.startsWith('google/')) {
-            // --- HANDLE DIRECT GOOGLE API CALL ---
             const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) throw new Error('GEMINI_API_KEY not configured.');
             
             const googleModelName = model.split('/')[1];
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModelName}:generateContent?key=${apiKey}`;
 
-            // --- NEW --- Transform messages and build the request body
             const { system_prompt, contents } = transformMessagesForGoogle(messages);
-            
             const requestBody = { contents };
             if (system_prompt) {
-                requestBody.systemInstruction = {
-                    role: "user", // The role for system instructions must be 'user'
-                    parts: [{ text: system_prompt }]
-                };
+                requestBody.systemInstruction = { role: "user", parts: [{ text: system_prompt }] };
             }
 
-            response = await fetch(apiUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error?.message || 'Unknown Google API Error');
             }
-
             const data = await response.json();
-            const reply = data.candidates[0].content.parts[0].text;
+            const reply = data.candidates[0]?.content?.parts[0]?.text || "I'm sorry, I couldn't generate a response.";
             return res.json({ choices: [{ message: { content: reply } }] });
 
         } else {
-            // --- HANDLE OPENROUTER API CALL (as before) ---
             const apiKey = process.env.OPENROUTER_API_KEY;
             if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured.');
             
             const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-
-            response = await fetch(apiUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ model: model, messages: messages })
             });
-
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.error?.message || 'Unknown OpenRouter API Error');
             }
-            
             const data = await response.json();
             return res.json(data);
         }
@@ -101,14 +91,22 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
-app.get('/', (req, res) => {
-    res.sendFile(__dirname + '/index.html');
-});
+function transformMessagesForGoogle(messages) {
+    let system_prompt = null;
+    const history = [];
+    messages.forEach(msg => {
+        if (msg.role === 'system' && msg.content) { system_prompt = msg.content; } 
+        else if (msg.role === 'user' || msg.role === 'assistant') { history.push(msg); }
+    });
+    const contents = history.map(msg => ({
+        role: msg.role === 'assistant' ? 'model' : 'user',
+        parts: [{ text: msg.content }]
+    }));
+    return { system_prompt, contents };
+}
+
+app.get('/', (req, res) => { res.sendFile(__dirname + '/index.html'); });
 
 app.listen(port, () => {
     console.log(`Server is running at http://localhost:${port}`);
-    console.log('--- Checking Environment Variables ---');
-    console.log('OpenRouter Key Loaded:', process.env.OPENROUTER_API_KEY ? 'Yes' : 'No');
-    console.log('Gemini Key Loaded:    ', process.env.GEMINI_API_KEY ? 'Yes' : 'No');
-    console.log('------------------------------------');
 });
