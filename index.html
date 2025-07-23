@@ -64,9 +64,7 @@
 <!-- Line Before -->
 <body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100">
 
-<!-- NEW Code to Add (This entirely replaces your old #auth-section) -->
-    <!-- Authentication Section -->
-    <section id="auth-section" class="flex items-center justify-center w-full min-h-screen p-4">
+<section id="auth-section" class="flex items-center justify-center w-full min-h-screen p-4">
         <div class="w-full max-w-md mx-auto">
             <div class="flex flex-col items-center justify-center mb-8">
                 <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
@@ -77,28 +75,28 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Google Sign-in Button -->
                 <button id="google-signin-btn" class="w-full flex items-center justify-center py-3 px-4 bg-white dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
                     <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.219,0-9.559-3.397-11.28-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
                     <span class="font-medium text-gray-700 dark:text-gray-200">Sign in with Google</span>
                 </button>
-
-                <!-- "Or" Separator -->
                 <div class="flex items-center my-6">
                     <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
                     <span class="px-4 text-sm text-gray-500 dark:text-gray-400">or</span>
                     <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
                 </div>
-
-                <!-- Email Login Container -->
                 <div class="bg-white dark:bg-slate-800/50 p-6 rounded-lg border border-gray-200 dark:border-slate-700">
                     <div id="login-view">
                         <form id="login-form" class="space-y-4">
                             <input type="email" id="login-email" placeholder="Email Address" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
-                            <input type="password" id="login-password" placeholder="Password" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <div>
+                                <input type="password" id="login-password" placeholder="Password" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                                <div class="text-right mt-2">
+                                    <a href="#" id="show-forgot-password" class="text-xs text-indigo-600 hover:underline dark:text-indigo-500">Forgot Password?</a>
+                                </div>
+                            </div>
                             <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Login</button>
                         </form>
-                        <p class="text-sm text-center mt-5" id="show-signup">Don't have an account? <a href="#" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Sign Up</a></p>
+                        <p class="text-sm text-center mt-5"><a href="#" id="show-signup" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Don't have an account? Sign Up</a></p>
                     </div>
                     <div id="signup-view" style="display: none;">
                         <form id="signup-form" class="space-y-4">
@@ -106,15 +104,22 @@
                             <input type="password" id="signup-password" placeholder="Password (min. 6 characters)" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
                             <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Sign Up</button>
                         </form>
-                         <p class="text-sm text-center mt-5" id="show-login">Already have an account? <a href="#" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Login</a></p>
+                        <p class="text-sm text-center mt-5"><a href="#" id="show-login" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Already have an account? Login</a></p>
+                    </div>
+                    <div id="forgot-password-view" style="display: none;">
+                        <h3 class="font-semibold text-lg mb-4 text-gray-800 dark:text-gray-100">Reset Password</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Enter your email and we'll send you a link to reset your password.</p>
+                        <form id="forgot-password-form" class="space-y-4">
+                            <input type="email" id="forgot-password-email" placeholder="Email Address" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-indigo-500 focus:border-indigo-500 block w-full p-3 dark:bg-slate-700 dark:border-slate-600 dark:placeholder-gray-400 dark:text-white">
+                            <button type="submit" class="w-full text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-3 text-center dark:bg-indigo-600 dark:hover:bg-indigo-700 dark:focus:ring-indigo-800">Send Reset Link</button>
+                        </form>
+                        <p class="text-sm text-center mt-5"><a href="#" id="back-to-login" class="font-semibold text-indigo-600 hover:underline dark:text-indigo-500">Back to Login</a></p>
                     </div>
                     <p id="error-message" class="text-center text-red-500 mt-4 min-h-[20px]"></p>
                 </div>
             </div>
-
-            <!-- Continue as Guest Button -->
             <div class="text-center mt-8">
-                <button id="guest-signin-btn" class="text-sm text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors focus:outline-none">Continue as Guest</button>
+                <button id="guest-signin-btn" class="text-base text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors focus:outline-none">Continue as Guest</button>
             </div>
         </div>
     </section>
@@ -139,7 +144,7 @@
          <div class="p-4 border-t border-gray-200 dark:border-gray-700">
             <div class="flex items-center justify-between">
                 <div class="flex items-center min-w-0">
-                    <img src="https://i.pravatar.cc/40" alt="User Avatar" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">
+            <img id="userAvatar" src="https://i.pravatar.cc/40" alt="User Avatar" class="w-8 h-8 rounded-full mr-3 flex-shrink-0">
                     <span id="userEmailDisplay" class="font-medium text-sm dark:text-gray-200 truncate">user@example.com</span>
                 </div>
                 <button id="signoutBtn" title="Sign Out" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex-shrink-0 ml-2">
@@ -229,12 +234,13 @@
 
      </div> 
 
-     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+         <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
 
-
     <script type="module">
+        // This is the main entry point for our entire application.
+        function main() {
 
 const firebaseConfig = {
   apiKey: "AIzaSyBXgaTb9XFlDS491i765UFBe325Qg4z0QE",
@@ -245,385 +251,502 @@ const firebaseConfig = {
   appId: "1:784623545561:web:74a3ba27805e005d7ca2c8"
 };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const auth = firebase.auth();
-        // --- CONFIGURATION ---
-        const MODEL_CONFIG = {
-            'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' },
-            'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-            'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3 (Free)', color: 'deepseek-v3' },
-            'deepseek/deepseek-r1-0528:free': { name: 'DeepSeek R1 (Free)', color: 'deepseek-r1' },
-            'qwen/qwen3-32b:free': { name: 'Qwen3 32B (Free)', color: 'qwen-32b' },
-            'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B (Free)', color: 'qwen-235b' }
-        };
+   firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-        // --- DOM Elements ---
-        const dom = {
-            // Auth elements
-            authSection: document.getElementById('auth-section'),
-            appContainer: document.getElementById('app-container'),
-            loginView: document.getElementById('login-view'),
-            signupView: document.getElementById('signup-view'),
-            loginForm: document.getElementById('login-form'),
-            signupForm: document.getElementById('signup-form'),
-            showSignup: document.getElementById('show-signup'),
-            showLogin: document.getElementById('show-login'),
-            errorMessage: document.getElementById('error-message'),
-            signoutBtn: null, 
+    
+            const MODEL_CONFIG = {
+                'google/gemini-1.5-flash-latest': { name: 'Gemini 1.5 Flash', color: 'gemini' },
+                'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
+                'deepseek/deepseek-chat': { name: 'DeepSeek V2 (Free)', color: 'deepseek-v3' },
+                'deepseek/deepseek-coder': { name: 'DeepSeek Coder (Free)', color: 'deepseek-r1' },
+                'qwen/qwen-2-72b-instruct': { name: 'Qwen2 72B (Free)', color: 'qwen-32b' },
+                'mistralai/mistral-large-latest': { name: 'Mistral Large', color: 'qwen-235b' }
+            };
 
-            themeToggle: document.getElementById('themeToggle'), sunIcon: document.getElementById('sunIcon'), moonIcon: document.getElementById('moonIcon'),
-            messageInput: document.getElementById('messageInput'), sendBtn: document.getElementById('sendBtn'), chatHistoryContainer: document.getElementById('chatHistoryContainer'),
-            chatHistory: document.getElementById('chatHistory'), sidebar: document.getElementById('sidebar'), sidebarToggle: document.getElementById('sidebarToggle'),
-            sidebarOverlay: document.getElementById('sidebarOverlay'), voiceBtn: document.getElementById('voiceBtn'), newChatBtn: document.getElementById('newChatBtn'),
-            chatList: document.getElementById('chatList'), modelIndicatorPill: document.getElementById('modelIndicatorPill'),
-            modelSelectorBtn: document.getElementById('modelSelectorBtn'), modelSelectorLabel: document.getElementById('modelSelectorLabel'), modelSelectorPanel: document.getElementById('modelSelectorPanel'),
-            promptBtn: document.getElementById('promptBtn'), promptModal: document.getElementById('promptModal'), promptOverlay: document.getElementById('promptOverlay'),
-            promptPanel: document.getElementById('promptPanel'), promptTextarea: document.getElementById('promptTextarea'), promptSaveBtn: document.getElementById('promptSaveBtn'), promptCancelBtn: document.getElementById('promptCancelBtn'),
-            searchChats: document.getElementById('searchChats'), importChatBtn: document.getElementById('importChatBtn'), importFileInput: document.getElementById('importFileInput')
-        };
+            // =================================================================================
+            // DOM ELEMENT REFERENCES
+            // =================================================================================
+            const dom = {
+                authSection: document.getElementById('auth-section'),
+                appContainer: document.getElementById('app-container'),
+                loginView: document.getElementById('login-view'),
+                signupView: document.getElementById('signup-view'),
+                forgotPasswordView: document.getElementById('forgot-password-view'),
+                loginForm: document.getElementById('login-form'),
+                signupForm: document.getElementById('signup-form'),
+                forgotPasswordForm: document.getElementById('forgot-password-form'),
+                showSignup: document.getElementById('show-signup'),
+                showLogin: document.getElementById('show-login'),
+                showForgotPassword: document.getElementById('show-forgot-password'),
+                backToLogin: document.getElementById('back-to-login'),
+                googleSigninBtn: document.getElementById('google-signin-btn'),
+                guestSigninBtn: document.getElementById('guest-signin-btn'),
+                signoutBtn: null, // Will be assigned later
+                errorMessage: document.getElementById('error-message'),
+                userAvatar: null, // Will be assigned later
+                userEmailDisplay: null, // Will be assigned later
+                themeToggle: document.getElementById('themeToggle'), 
+                sunIcon: document.getElementById('sunIcon'), 
+                moonIcon: document.getElementById('moonIcon'),
+                messageInput: document.getElementById('messageInput'), 
+                sendBtn: document.getElementById('sendBtn'), 
+                chatHistoryContainer: document.getElementById('chatHistoryContainer'),
+                chatHistory: document.getElementById('chatHistory'), 
+                sidebar: document.getElementById('sidebar'), 
+                sidebarToggle: document.getElementById('sidebarToggle'),
+                sidebarOverlay: document.getElementById('sidebarOverlay'), 
+                voiceBtn: document.getElementById('voiceBtn'), 
+                newChatBtn: document.getElementById('newChatBtn'),
+                chatList: document.getElementById('chatList'), 
+                modelIndicatorPill: document.getElementById('modelIndicatorPill'),
+                modelSelectorBtn: document.getElementById('modelSelectorBtn'), 
+                modelSelectorLabel: document.getElementById('modelSelectorLabel'), 
+                modelSelectorPanel: document.getElementById( 'modelSelectorPanel' ),
+                promptBtn: document.getElementById('promptBtn'), 
+                promptModal: document.getElementById('promptModal'), 
+                promptOverlay: document.getElementById('promptOverlay'),
+                promptPanel: document.getElementById('promptPanel'), 
+                promptTextarea: document.getElementById('promptTextarea'), 
+                promptSaveBtn: document.getElementById('promptSaveBtn'), 
+                promptCancelBtn: document.getElementById('promptCancelBtn'),
+                searchChats: document.getElementById('searchChats'), 
+                importChatBtn: document.getElementById('importChatBtn'), 
+                importFileInput: document.getElementById('importFileInput')
+            };
 
-        // --- STATE MANAGEMENT ---
-        let chats = {};
-        let activeChatId = null;
-        let isAppInitialized = false;
+            // =================================================================================
+            // STATE MANAGEMENT
+            // =================================================================================
+            let chats = {};
+            let activeChatId = null;
+            let isAppInitialized = false;
+            let recognition; // For voice recognition
 
-
-        // =================================================================================
-        // AUTHENTICATION & UI LOGIC
-        // =================================================================================
-        
-        // --- Helper function to toggle between login and signup forms ---
-        const toggleViews = () => {
-            const isLoginVisible = dom.loginView.style.display === 'block';
-            dom.loginView.style.display = isLoginVisible ? 'none' : 'block';
-            dom.signupView.style.display = isLoginVisible ? 'block' : 'none';
-            dom.errorMessage.textContent = ''; // Clear errors when toggling
-        };
-        dom.showSignup.addEventListener('click', toggleViews);
-        dom.showLogin.addEventListener('click', toggleViews);
-
-        // --- Sign Up ---
-        dom.signupForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            dom.errorMessage.textContent = '';
-            const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
-
-            auth.createUserWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log('User signed up successfully:', userCredential.user);
-                    // The onAuthStateChanged listener (which we'll add next) will handle showing the chat app.
-                })
-                .catch((error) => {
-                    console.error('Sign up error:', error);
-                    dom.errorMessage.textContent = error.message;
-                });
-        });
-
-        // --- Login ---
-        dom.loginForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            dom.errorMessage.textContent = '';
-            const email = document.getElementById('login-email').value;
-            const password = document.getElementById('login-password').value;
-
-            auth.signInWithEmailAndPassword(email, password)
-                .then((userCredential) => {
-                    console.log('User logged in successfully:', userCredential.user);
-                    // The onAuthStateChanged listener (which we'll add next) will handle showing the chat app.
-                })
-                .catch((error) => {
-                    console.error('Login error:', error);
-                    dom.errorMessage.textContent = error.message;
-                });
-        });
-
-         // --- Sign Out ---
-        const signOutUser = () => {
-            auth.signOut().catch((error) => {
-                console.error('Sign out error', error);
-                // Optionally show an error to the user
-                alert('Error signing out. Please try again.');
-            });
-        };
-
-        // --- Auth State Controller ---
-        auth.onAuthStateChanged(user => {
-            if (user) {
-                // User is signed in.
-                console.log('Auth state changed: Logged in as', user.email);
-                
-                // Show the chat app and hide the auth forms
-                dom.appContainer.style.display = 'flex';
-                dom.authSection.style.display = 'none';
-
-                // Update the UI with user info
-                document.getElementById('userEmailDisplay').textContent = user.email;
-
-                // Wire up the signout button (it only exists when the user is logged in)
-                dom.signoutBtn = document.getElementById('signoutBtn');
-                dom.signoutBtn.addEventListener('click', signOutUser);
-
-                if (!isAppInitialized) {
-                    init();
-                    isAppInitialized = true;
-                }
-                
-                // This part runs EVERY time the user is confirmed to be logged in.
-                // It loads the chats from localStorage and displays the most recent one.
-                chats = loadChats();
-                if (Object.keys(chats).length === 0) {
-                    createNewChat(); // If no chats exist, create a new one.
-                } else {
-                    switchChat(Math.max(...Object.keys(chats).map(Number))); // Otherwise, switch to the latest one.
-                }
-
-            } else {
-                // User is signed out.
-                console.log('Auth state changed: Logged out');
-
-                // Show the auth forms and hide the chat app
-                dom.appContainer.style.display = 'none';
-                dom.authSection.style.display = 'flex';
-
-                // Reset to login view
+            // =================================================================================
+            // AUTHENTICATION FUNCTIONS
+            // =================================================================================
+            const showLoginView = () => { 
                 dom.loginView.style.display = 'block';
                 dom.signupView.style.display = 'none';
-            }
-        });
+                dom.forgotPasswordView.style.display = 'none';
+                dom.errorMessage.textContent = '';
+             };
 
-        // --- FUNCTIONS ---
-        const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
-        const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
-        const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
-        
-        const applyModelColorTheme = (colorName) => {
-            if (!colorName) return;
-            const buttons = [dom.newChatBtn, dom.sendBtn];
-            const colorClasses = Object.values(MODEL_CONFIG).map(m => `bg-${m.color}`);
-            const hoverClasses = Object.values(MODEL_CONFIG).map(m => `hover:bg-${m.color}/90`);
-            buttons.forEach(button => { button.classList.remove(...colorClasses, 'bg-indigo-600'); button.classList.remove(...hoverClasses, 'hover:bg-indigo-700'); button.classList.add(`bg-${colorName}`, `hover:bg-${colorName}/90`); });
-        };
+            const showSignupView = () => {
+                dom.loginView.style.display = 'none';
+                dom.signupView.style.display = 'block';
+                dom.forgotPasswordView.style.display = 'none';
+                dom.errorMessage.textContent = '';
+            };
 
-        const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
-        const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
-        const saveSystemPrompt = () => { if (!activeChatId) return; chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim(); saveChats(); closePromptModal(); };
-        const renameChat = (chatId, newName) => { if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); } };
-        
-        // --- NEW Export / Import Logic ---
-        const exportChat = (chatId) => {
-            if (!chats[chatId]) return;
-            const chat = chats[chatId];
-            const jsonString = JSON.stringify(chat, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            const safeName = chat.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-            a.download = `abot_chat_${safeName}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        };
+            const showForgotPasswordView = () => {
+                dom.loginView.style.display = 'none';
+                dom.signupView.style.display = 'none';
+                dom.forgotPasswordView.style.display = 'block';
+                dom.errorMessage.textContent = '';
+            };
 
-        const importChat = (file) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                try {
-                    const importedChat = JSON.parse(e.target.result);
-                    if (importedChat.id && importedChat.name && Array.isArray(importedChat.messages)) {
-                        importedChat.id = Date.now(); // Assign a new unique ID to prevent conflicts
-                        chats[importedChat.id] = importedChat;
-                        saveChats();
-                        switchChat(importedChat.id);
-                    } else {
-                        alert('Invalid chat file format.');
-                    }
-                } catch (err) {
-                    alert('Could not parse chat file. Please make sure it is a valid JSON file.');
+            const signInWithGoogle = () => {
+                dom.errorMessage.textContent = '';
+                const provider = new firebase.auth.GoogleAuthProvider();
+                auth.signInWithPopup(provider)
+                    .catch((error) => {
+                        console.error("Google sign-in error:", error);
+                        dom.errorMessage.textContent = error.message;
+                    });
+            };
+
+            const signInAsGuest = () => {
+                dom.errorMessage.textContent = '';
+                auth.signInAnonymously()
+                    .catch((error) => {
+                        console.error("Anonymous sign-in error:", error);
+                        dom.errorMessage.textContent = `Could not start a guest session: ${error.message}`;
+                    });
+            };
+
+            const signOutUser = () => {
+                auth.signOut().catch((error) => console.error('Sign out error', error));
+            };
+
+            // =================================================================================
+            // CORE CHAT APPLICATION FUNCTIONS
+            // =================================================================================
+            const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
+            const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
+            const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
+            
+            const applyModelColorTheme = (colorName) => {
+                const elementsToColor = [dom.newChatBtn, dom.sendBtn];
+                const baseColorClass = `bg-${colorName}`;
+                const hoverColorClass = `hover:bg-${colorName}/90`;
+                const borderColorClass = `border-${colorName}`;
+                
+                elementsToColor.forEach(el => {
+                    if(!el) return;
+                    el.className = el.className.replace(/bg-\w+-?\d*/g, '').replace(/hover:bg-\w+-?\d*\/?\d*/g, '');
+                    el.classList.add(baseColorClass, hoverColorClass);
+                });
+                
+                const pill = dom.modelIndicatorPill;
+                if(pill) {
+                    pill.className = pill.className.replace(/text-\w+-?\d*/g, '').replace(/border-\w+-?\d*/g, '');
+                    pill.classList.add(`text-${colorName}`, `border-${colorName}`);
                 }
             };
-            reader.readAsText(file);
-        };
+            
+            const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
+            const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
+            const saveSystemPrompt = () => { if (!activeChatId) return; chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim(); saveChats(); closePromptModal(); };
+            const renameChat = (chatId, newName) => { if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); } };
+            
+            const exportChat = (chatId) => {
+                if (!chats[chatId]) return;
+                const chat = chats[chatId];
+                const jsonString = JSON.stringify(chat, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                const safeName = chat.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                a.download = `abot_chat_${safeName}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
 
-        const deleteChat = (chatId) => {
-            if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
-            const isDeletingActiveChat = chatId === activeChatId;
-            delete chats[chatId];
-            saveChats();
-            if (isDeletingActiveChat) {
-                const remainingChatIds = Object.keys(chats);
-                if (remainingChatIds.length > 0) {
-                    switchChat(Math.max(...remainingChatIds.map(Number)));
-                } else {
-                    createNewChat();
-                }
-            } else {
-                 renderChatList();
-            }
-        };
+            const importChat = (file) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedChat = JSON.parse(e.target.result);
+                        if (importedChat.id && importedChat.name && Array.isArray(importedChat.messages)) {
+                            importedChat.id = Date.now(); // Assign a new unique ID
+                            chats[importedChat.id] = importedChat;
+                            saveChats();
+                            switchChat(importedChat.id);
+                        } else {
+                            alert('Invalid chat file format.');
+                        }
+                    } catch (err) {
+                        alert('Could not parse chat file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
 
-        const renderChatList = (searchTerm = '') => {
-            dom.chatList.innerHTML = '';
-            const filteredChats = Object.values(chats).filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
-            filteredChats.sort((a,b) => b.id - a.id).forEach(chat => {
-                const chatItemContainer = document.createElement('div');
-                chatItemContainer.className = `relative chat-list-item group ${chat.id === activeChatId ? 'active' : ''}`;
-                // --- NEW --- Added Export button to the menu
-                chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${chat.id === activeChatId ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="export-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Export</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
-                const nameSpan = chatItemContainer.querySelector('.chat-name-span');
-                const renameInput = chatItemContainer.querySelector('.chat-rename-input');
-                const saveRename = () => { renameChat(chat.id, renameInput.value); nameSpan.classList.remove('hidden'); renameInput.classList.add('hidden'); };
-                renameInput.addEventListener('keydown', e => e.key === 'Enter' && saveRename());
-                renameInput.addEventListener('blur', saveRename);
-                chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
-                chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
-                chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
-                chatItemContainer.querySelector('.export-chat-btn').addEventListener('click', e => { e.stopPropagation(); exportChat(chat.id); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
-                chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
-                dom.chatList.appendChild(chatItemContainer);
-            });
-        };
-
-        const renderActiveChat = () => {
-            const chat = chats[activeChatId]; if (!chat) return;
-            dom.chatHistory.innerHTML = ''; chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
-            dom.modelSelectorLabel.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
-            dom.modelIndicatorPill.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
-            applyModelColorTheme(MODEL_CONFIG[chat.model]?.color);
-        };
-        
-        const switchChat = (chatId) => { activeChatId = chatId; renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
-        const createNewChat = () => {
-            const newChatId = Date.now();
-            chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
-            activeChatId = newChatId;
-            saveChats();
-            renderChatList();
-            renderActiveChat();
-            closeSidebar();
-        };
-
-        const appendMessage = (sender, text, isHistory = false) => {
-            const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; const isUser = role === 'user';
-            const currentChat = chats[activeChatId]; if (!currentChat) return;
-            const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-            const userBubbleColor = `bg-${modelConf.color}`;
-            const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
-            const justifyClass = isUser ? 'justify-end' : 'justify-start';
-            const avatarHtml = isUser ? `<img src="https://i.pravatar.cc/40?u=user" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
-            const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
-            let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
-            messageEl.innerHTML = `<div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
-            dom.chatHistory.appendChild(messageEl);
-            if (!isUser) {
-                messageEl.querySelectorAll('pre code').forEach(block => {
-                    const pre = block.parentElement; const copyBtn = document.createElement('button');
-                    copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
-                    copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
-                    pre.appendChild(copyBtn); hljs.highlightElement(block);
-                });
-            }
-            dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-        };
-        
-        const showTypingIndicator = () => {
-            const currentChat = chats[activeChatId]; if (!currentChat) return;
-            const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-            const indicator = document.createElement('div'); indicator.id = 'typingIndicator';
-            indicator.innerHTML = `<div class="flex items-start justify-start"><div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div><div class="bot-bubble bg-white dark:bg-gray-700 shadow-sm chat-bubble p-4"><div class="typing-indicator"><span></span><span></span><span></span></div></div></div>`;
-            dom.chatHistory.appendChild(indicator); dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-        };
-        
-        const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
-
-        const sendMessage = async () => {
-            const message = dom.messageInput.value.trim(); if (!message) return;
-            const currentChat = chats[activeChatId]; appendMessage('user', message);
-            currentChat.messages.push({ role: 'user', content: message });
-            if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
-                currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
-                renderChatList();
-            }
-            dom.messageInput.value = ''; dom.messageInput.style.height = 'auto';
-            showTypingIndicator();
-            const messagesToSend = [ { role: 'system', content: currentChat.systemPrompt }, ...currentChat.messages.filter(m => m.role !== 'system').slice(-10) ];
-            const currentUser = auth.currentUser;
-            if (!currentUser) {
-                removeTypingIndicator();
-                appendMessage('bot', '<strong>Authentication Error:</strong> You are not signed in. Please refresh and sign in again.');
-                return;
-            }
-
-            try {
-                const idToken = await currentUser.getIdToken();
-                const res = await fetch('/api/chat', { 
-                    method: 'POST', 
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${idToken}` // This is the new, important line
-                    }, 
-                    body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) 
-                });
-                removeTypingIndicator();
-                if (!res.ok) {
-                    const errorData = await res.json();
-                    const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
-                    appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-                } else {
-                    const data = await res.json();
-                    const reply = data.choices[0].message.content;
-                    appendMessage('bot', reply); currentChat.messages.push({ role: 'assistant', content: reply });
-                }
-            } catch (error) {
-                removeTypingIndicator();
-                const errorMsg = `<strong>Network Error:</strong> Could not connect to the server.`;
-                appendMessage('bot', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-            } finally {
+            const deleteChat = (chatId) => {
+                if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
+                const isDeletingActiveChat = String(chatId) === String(activeChatId);
+                delete chats[chatId];
                 saveChats();
-            }
-        };
-        
-        function init() {
-            // Dark Mode Setup
-            if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
-            dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
+                if (isDeletingActiveChat) {
+                    const remainingChatIds = Object.keys(chats);
+                    if (remainingChatIds.length > 0) {
+                        switchChat(Math.max(...remainingChatIds.map(Number)));
+                    } else {
+                        createNewChat();
+                    }
+                } else {
+                     renderChatList();
+                }
+            };
 
-            // Model Selector Panel Population
-            Object.keys(MODEL_CONFIG).forEach(key => {
-                const model = MODEL_CONFIG[key]; const optionEl = document.createElement('a'); optionEl.href = '#';
-                optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
-                optionEl.textContent = model.name; optionEl.dataset.modelKey = key;
-                optionEl.addEventListener('click', e => { e.preventDefault(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); });
-                dom.modelSelectorPanel.appendChild(optionEl);
+            const renderChatList = (searchTerm = '') => {
+                dom.chatList.innerHTML = '';
+                const filteredChats = Object.values(chats).filter(chat => chat.name.toLowerCase().includes(searchTerm.toLowerCase()));
+                filteredChats.sort((a,b) => b.id - a.id).forEach(chat => {
+                    const chatItemContainer = document.createElement('div');
+                    chatItemContainer.className = `relative chat-list-item group ${String(chat.id) === String(activeChatId) ? 'active' : ''}`;
+                    chatItemContainer.innerHTML = `<div class="flex items-center justify-between w-full rounded-md ${String(chat.id) === String(activeChatId) ? '' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}"><a href="#" class="flex-1 px-4 py-2 text-sm truncate" data-chat-id="${chat.id}"><span class="chat-name-span">${chat.name}</span></a><input type="text" class="chat-rename-input hidden flex-1 mx-2 p-1 text-sm bg-gray-200 dark:bg-gray-700 rounded" value="${chat.name}"><button class="chat-options-btn p-1 mr-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" /></svg></button></div><div class="absolute right-0 top-full mt-1 w-32 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-10 hidden chat-options-menu"><button class="rename-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Rename</button><button class="export-chat-btn w-full text-left px-3 py-1.5 text-sm hover:bg-gray-100 dark:hover:bg-gray-700">Export</button><button class="delete-chat-btn w-full text-left px-3 py-1.5 text-sm text-red-600 dark:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700">Delete</button></div>`;
+                    const nameSpan = chatItemContainer.querySelector('.chat-name-span');
+                    const renameInput = chatItemContainer.querySelector('.chat-rename-input');
+                    const saveRename = () => { renameChat(chat.id, renameInput.value); };
+                    renameInput.addEventListener('keydown', e => { if (e.key === 'Enter') { saveRename(); renameInput.blur(); } else if (e.key === 'Escape') { renameInput.blur(); } });
+                    renameInput.addEventListener('blur', () => { nameSpan.classList.remove('hidden'); renameInput.classList.add('hidden'); renderChatList(dom.searchChats.value); });
+                    chatItemContainer.querySelector('a').addEventListener('click', e => { e.preventDefault(); switchChat(chat.id); });
+                    chatItemContainer.querySelector('.chat-options-btn').addEventListener('click', e => { e.stopPropagation(); const menu = chatItemContainer.querySelector('.chat-options-menu'); document.querySelectorAll('.chat-options-menu').forEach(m => m !== menu && m.classList.add('hidden')); menu.classList.toggle('hidden'); });
+                    chatItemContainer.querySelector('.rename-chat-btn').addEventListener('click', e => { e.stopPropagation(); nameSpan.classList.add('hidden'); renameInput.classList.remove('hidden'); renameInput.focus(); renameInput.select(); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
+                    chatItemContainer.querySelector('.export-chat-btn').addEventListener('click', e => { e.stopPropagation(); exportChat(chat.id); chatItemContainer.querySelector('.chat-options-menu').classList.add('hidden'); });
+                    chatItemContainer.querySelector('.delete-chat-btn').addEventListener('click', e => { e.stopPropagation(); deleteChat(chat.id); });
+                    dom.chatList.appendChild(chatItemContainer);
+                });
+            };
+
+            const renderActiveChat = () => {
+                if (!activeChatId || !chats[activeChatId]) {
+                  dom.chatHistory.innerHTML = ''; return;
+                }
+                const chat = chats[activeChatId];
+                dom.chatHistory.innerHTML = ''; 
+                chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
+                dom.modelSelectorLabel.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
+                dom.modelIndicatorPill.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
+                applyModelColorTheme(MODEL_CONFIG[chat.model]?.color || 'indigo-600');
+            };
+            
+            const switchChat = (chatId) => { activeChatId = String(chatId); renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
+            const createNewChat = () => {
+                const newChatId = String(Date.now());
+                chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
+                activeChatId = newChatId;
+                saveChats();
+                switchChat(newChatId);
+            };
+
+            const appendMessage = (sender, text, isHistory = false) => {
+                const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; const isUser = role === 'user';
+                const currentChat = chats[activeChatId]; if (!currentChat) return;
+                const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
+                const userBubbleColor = `bg-${modelConf.color}`;
+                const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
+                const justifyClass = isUser ? 'justify-end' : 'justify-start';
+                
+                let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
+                if(auth.currentUser && !auth.currentUser.isAnonymous) {
+                   userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
+                }
+
+                const avatarHtml = isUser ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
+                const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
+                let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
+                messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
+                dom.chatHistory.appendChild(messageEl);
+                if (!isUser) {
+                    messageEl.querySelectorAll('pre code').forEach(block => {
+                        const pre = block.parentElement; const copyBtn = document.createElement('button');
+                        copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
+                        copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
+                        pre.appendChild(copyBtn); hljs.highlightElement(block);
+                    });
+                }
+                dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+            };
+            
+            const showTypingIndicator = () => {
+                removeTypingIndicator(); // Remove any existing one
+                const chat = chats[activeChatId]; if (!chat) return;
+                const modelConf = MODEL_CONFIG[chat.model] || { name: 'AI', color: 'indigo-600' };
+                const typingEl = document.createElement('div');
+                typingEl.id = 'typingIndicator';
+                typingEl.className = 'flex items-center justify-start';
+                typingEl.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0">
+                        <span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span>
+                    </div>
+                    <div class="bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm chat-bubble p-4">
+                        <div class="typing-indicator text-${modelConf.color}"><span></span><span></span><span></span></div>
+                    </div>`;
+                dom.chatHistory.appendChild(typingEl);
+                dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+            };
+            const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
+
+            const sendMessage = async () => {
+                const message = dom.messageInput.value.trim(); if (!message) return;
+                const currentChat = chats[activeChatId]; appendMessage('user', message);
+                currentChat.messages.push({ role: 'user', content: message });
+                if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
+                    currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
+                    renderChatList();
+                }
+                dom.messageInput.value = ''; dom.messageInput.style.height = 'auto';
+                showTypingIndicator();
+                const messagesToSend = [ { role: 'system', content: currentChat.systemPrompt }, ...currentChat.messages.filter(m => m.role !== 'system').slice(-10) ];
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    removeTypingIndicator();
+                    appendMessage('assistant', '<strong>Authentication Error:</strong> You are not signed in. Please refresh and sign in again.');
+                    return;
+                }
+                try {
+                    const idToken = await currentUser.getIdToken(true);
+                    const res = await fetch('/api/chat', { 
+                        method: 'POST', 
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${idToken}`
+                        }, 
+                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) 
+                    });
+                    removeTypingIndicator();
+                    if (!res.ok) {
+                        const errorData = await res.json();
+                        const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
+                        appendMessage('assistant', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
+                    } else {
+                        const data = await res.json();
+                        const reply = data.choices[0].message.content;
+                        appendMessage('assistant', reply); currentChat.messages.push({ role: 'assistant', content: reply });
+                    }
+                } catch (error) {
+                    removeTypingIndicator();
+                    console.error("Fetch error:", error);
+                    const errorMsg = `<strong>Network Error:</strong> Could not connect to the server. Check your connection or the server status.`;
+                    appendMessage('assistant', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
+                } finally {
+                    saveChats();
+                }
+            };
+
+            const startVoiceRecognition = () => {
+                if (!recognition) {
+                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if (!SpeechRecognition) {
+                        alert("Speech Recognition not supported in your browser.");
+                        return;
+                    }
+                    recognition = new SpeechRecognition();
+                    recognition.continuous = false;
+                    recognition.lang = 'en-US';
+                    recognition.interimResults = false;
+                    recognition.maxAlternatives = 1;
+
+                    recognition.onresult = (event) => {
+                        const transcript = event.results[0][0].transcript;
+                        dom.messageInput.value = dom.messageInput.value + transcript;
+                        dom.messageInput.dispatchEvent(new Event('input')); // Trigger auto-resize
+                    };
+                    recognition.onend = () => {
+                        dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
+                    };
+                    recognition.onerror = (event) => {
+                        console.error("Speech recognition error", event.error);
+                        dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
+                    };
+                }
+                dom.voiceBtn.classList.add('voice-pulse', 'text-red-500');
+                recognition.start();
+            };
+
+            // =================================================================================
+            // APPLICATION INITIALIZATION AND EVENT LISTENERS
+            // =================================================================================
+            function initApp() {
+                if (isAppInitialized) return; 
+
+                dom.signoutBtn = document.getElementById('signoutBtn');
+                dom.userAvatar = document.getElementById('userAvatar');
+                dom.userEmailDisplay = document.getElementById('userEmailDisplay');
+
+                if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
+                dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
+                
+                Object.keys(MODEL_CONFIG).forEach(key => {
+                    const model = MODEL_CONFIG[key]; const optionEl = document.createElement('a'); optionEl.href = '#';
+                    optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
+                    optionEl.textContent = model.name; optionEl.dataset.modelKey = key;
+                    optionEl.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); });
+                    dom.modelSelectorPanel.appendChild(optionEl);
+                });
+
+                dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; });
+                document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
+                dom.newChatBtn.addEventListener('click', createNewChat);
+                dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
+                dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
+                dom.sendBtn.addEventListener('click', sendMessage);
+                dom.voiceBtn.addEventListener('click', startVoiceRecognition);
+                dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
+                dom.sidebarOverlay.addEventListener('click', closeSidebar);
+                dom.promptBtn.addEventListener('click', openPromptModal);
+                dom.promptOverlay.addEventListener('click', closePromptModal);
+                dom.promptCancelBtn.addEventListener('click', closePromptModal);
+                dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
+                dom.searchChats.addEventListener('input', (e) => { renderChatList(e.target.value); });
+                dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
+                dom.importFileInput.addEventListener('change', (e) => {
+                    if (e.target.files.length > 0) { importChat(e.target.files[0]); }
+                    e.target.value = null; // Reset for same-file import
+                });
+                dom.signoutBtn.addEventListener('click', signOutUser);
+
+                isAppInitialized = true;
+            }
+
+            // --- ATTACH EVENT LISTENERS FOR AUTH FORMS ---
+            dom.showSignup.addEventListener('click', (e) => { e.preventDefault(); showSignupView(); });
+            dom.showLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
+            dom.showForgotPassword.addEventListener('click', (e) => { e.preventDefault(); showForgotPasswordView(); });
+            dom.backToLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
+            dom.googleSigninBtn.addEventListener('click', signInWithGoogle);
+            dom.guestSigninBtn.addEventListener('click', signInAsGuest);
+
+            dom.forgotPasswordForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('forgot-password-email').value;
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        dom.errorMessage.style.color = '#22c55e'; // green
+                        dom.errorMessage.textContent = 'Success! Check your email for a reset link.';
+                    })
+                    .catch((error) => {
+                        dom.errorMessage.style.color = ''; // default red
+                        dom.errorMessage.textContent = error.message;
+                    });
+            });
+            
+            dom.signupForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                dom.errorMessage.textContent = '';
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                auth.createUserWithEmailAndPassword(email, password)
+                    .catch((error) => {
+                        console.error('Sign up error:', error);
+                        dom.errorMessage.textContent = error.message;
+                    });
+            });
+            
+            dom.loginForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                dom.errorMessage.textContent = '';
+                const email = document.getElementById('login-email').value;
+                const password = document.getElementById('login-password').value;
+                auth.signInWithEmailAndPassword(email, password)
+                    .catch((error) => {
+                        console.error('Login error:', error);
+                        dom.errorMessage.textContent = error.message;
+                    });
             });
 
-            // Core Event Listeners
-            dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; });
-            document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
-            dom.newChatBtn.addEventListener('click', createNewChat);
-            dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
-            dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
-            dom.sendBtn.addEventListener('click', sendMessage);
-            dom.voiceBtn.addEventListener('click', () => { const recognition = new (window.SpeechRecognition || window.webkitRecognition)(); if (!recognition) return alert("Speech Recognition not supported."); dom.voiceBtn.classList.add('voice-pulse'); recognition.lang = 'en-US'; recognition.start(); recognition.onresult = e => { dom.messageInput.value = e.results[0][0].transcript; sendMessage(); }; recognition.onend = () => dom.voiceBtn.classList.remove('voice-pulse'); });
-            dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
-            dom.sidebarOverlay.addEventListener('click', () => closeSidebar());
-            dom.promptBtn.addEventListener('click', openPromptModal);
-            dom.promptOverlay.addEventListener('click', closePromptModal);
-            dom.promptCancelBtn.addEventListener('click', closePromptModal);
-            dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
-            dom.searchChats.addEventListener('input', (e) => { renderChatList(e.target.value); });
-            dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
-            dom.importFileInput.addEventListener('change', (e) => {
-                if (e.target.files.length > 0) {
-                    importChat(e.target.files[0]);
+
+            // --- CENTRAL AUTH STATE CONTROLLER ---
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    dom.appContainer.style.display = 'flex';
+                    dom.authSection.style.display = 'none';
+                    
+                    initApp(); // Initialize app elements, including sidebar ones
+
+                    if (user.isAnonymous) {
+                        dom.userEmailDisplay.textContent = 'Guest User';
+                        dom.userAvatar.src = `https://i.pravatar.cc/40?u=guest`;
+                    } else {
+                        dom.userEmailDisplay.textContent = user.displayName || user.email;
+                        dom.userAvatar.src = user.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`;
+                    }
+                    
+                    chats = loadChats();
+                    if (Object.keys(chats).length === 0) {
+                        createNewChat();
+                    } else {
+                        // Find the most recent chat to load
+                        const lastChatId = Math.max(...Object.keys(chats).map(Number));
+                        switchChat(String(lastChatId));
+                    }
+                } else {
+                    dom.appContainer.style.display = 'none';
+                    dom.authSection.style.display = 'flex';
+                    isAppInitialized = false; // Reset app state on logout
+                    showLoginView();
                 }
-                e.target.value = null;
             });
         }
+        document.addEventListener('DOMContentLoaded', main);
 
     </script>
 </body>
