@@ -232,8 +232,6 @@
     <!-- NEW Hidden file input for importing -->
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
-     </div> 
-
          <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -248,7 +246,8 @@ const firebaseConfig = {
   projectId: "abot-cloud",
   storageBucket: "abot-cloud.firebasestorage.app",
   messagingSenderId: "784623545561",
-  appId: "1:784623545561:web:74a3ba27805e005d7ca2c8"
+  appId: "1:784623545561:web:74a3ba27805e005d7ca2c8",
+  measurementId: "G-DR76L8Y697"
 };
 
    firebase.initializeApp(firebaseConfig);
@@ -256,12 +255,12 @@ const firebaseConfig = {
 
     
             const MODEL_CONFIG = {
-                'google/gemini-1.5-flash-latest': { name: 'Gemini 1.5 Flash', color: 'gemini' },
-                'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-                'deepseek/deepseek-chat': { name: 'DeepSeek V2 (Free)', color: 'deepseek-v3' },
-                'deepseek/deepseek-coder': { name: 'DeepSeek Coder (Free)', color: 'deepseek-r1' },
-                'qwen/qwen-2-72b-instruct': { name: 'Qwen2 72B (Free)', color: 'qwen-32b' },
-                'mistralai/mistral-large-latest': { name: 'Mistral Large', color: 'qwen-235b' }
+                'google/gemini-2.5-pro': { name: 'Gemini 2.5 Pro', color: 'gemini' },
+                'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini-pro' },
+                'deepseek/deepseek-chat-v3': { name: 'DeepSeek V3', color: 'deepseek-v3' },
+                'deepseek/deepseek-r1': { name: 'DeepSeek R1', color: 'deepseek-r1' },
+                'qwen/qwen3-235b-a22b': { name: 'Qwen3 235B', color: 'qwen-32b' },
+                'qwen/qwq-32b': { name: 'Qwen QwQ', color: 'qwen-235b' }
             };
 
             // =================================================================================
