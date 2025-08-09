@@ -244,6 +244,27 @@
     <!-- NEW Hidden file input for importing -->
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
+        <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-30 flex items-center justify-center hidden">
+        <div id="deleteOverlay" class="absolute inset-0 bg-black/50"></div>
+        <div id="deletePanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm mx-4 p-6" style="transform: scale(0.95); opacity: 0;">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
+                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
+                    </svg>
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Chat</h3>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Are you sure you want to permanently delete this chat? This action cannot be undone.</p>
+                <p id="chatNameToDelete" class="mt-2 text-sm font-medium text-gray-800 dark:text-gray-200 truncate"></p>
+            </div>
+            <div class="mt-6 grid grid-cols-2 gap-3">
+                <button id="deleteCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
+                <button id="deleteConfirmBtn" class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white">Delete</button>
+            </div>
+        </div>
+    </div>
+
          <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
@@ -323,7 +344,13 @@ const firebaseConfig = {
                 promptCancelBtn: document.getElementById('promptCancelBtn'),
                 searchChats: document.getElementById('searchChats'), 
                 importChatBtn: document.getElementById('importChatBtn'), 
-                importFileInput: document.getElementById('importFileInput')
+                importFileInput: document.getElementById('importFileInput'),
+                deleteModal: document.getElementById('deleteModal'),
+                deleteOverlay: document.getElementById('deleteOverlay'),
+                deletePanel: document.getElementById('deletePanel'),
+                chatNameToDelete: document.getElementById('chatNameToDelete'),
+                deleteCancelBtn: document.getElementById('deleteCancelBtn'),
+                deleteConfirmBtn: document.getElementById('deleteConfirmBtn')
             };
 
             // =================================================================================
@@ -431,7 +458,7 @@ const firebaseConfig = {
             
             const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
             const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
-            
+
                         const saveSystemPrompt = async () => {
                 const currentUser = auth.currentUser;
                 if (!activeChatId || !currentUser) return;
@@ -496,41 +523,18 @@ const firebaseConfig = {
                 reader.readAsText(file);
             };
 
-            const deleteChat = async (chatId) => {
-                const currentUser = auth.currentUser;
-                if (!currentUser || !chats[chatId]) return;
+                        const deleteChat = (chatId) => {
+                const chat = chats[chatId];
+                if (!chat) return;
 
-                if (!confirm(`Are you sure you want to permanently delete "${chats[chatId].name}"?`)) {
-                    return;
-                }
-
-                const isDeletingActiveChat = String(chatId) === String(activeChatId);
-                
-                try {
-                    // Step 1: Delete the document from Firestore
-                    const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
-                    await chatDocRef.delete();
-
-                    // Step 2: Delete the chat from the local state object
-                    delete chats[chatId];
-                    
-                    // Step 3: Update the UI
-                    if (isDeletingActiveChat) {
-                        const remainingChatIds = Object.keys(chats);
-                        if (remainingChatIds.length > 0) {
-                            const lastChatId = Math.max(...remainingChatIds.map(Number));
-                            switchChat(String(lastChatId));
-                        } else {
-                            await createNewChat(); // Creates a new chat if none are left
-                        }
-                    } else {
-                        renderChatList(); // Just refresh the list if a non-active chat was deleted
-                    }
-
-                } catch (error) {
-                    console.error("Error deleting chat from Firestore:", error);
-                    alert("Error: Could not delete chat from the cloud.");
-                }
+                // Populate and show the modal
+                dom.chatNameToDelete.textContent = `"${chat.name}"`;
+                dom.deleteConfirmBtn.dataset.chatId = chatId; // Store the ID on the button
+                dom.deleteModal.classList.remove('hidden');
+                setTimeout(() => { 
+                    dom.deletePanel.style.opacity = '1'; 
+                    dom.deletePanel.style.transform = 'scale(1)'; 
+                }, 10);
             };
 
             const renderChatList = (searchTerm = '') => {
@@ -890,6 +894,50 @@ const firebaseConfig = {
                     if (e.target.files.length > 0) { importChat(e.target.files[0]); }
                     e.target.value = null; // Reset for same-file import
                 });
+                                // --- Delete Modal Listeners ---
+                const closeDeleteModal = () => {
+                    dom.deletePanel.style.opacity = '0';
+                    dom.deletePanel.style.transform = 'scale(0.95)';
+                    setTimeout(() => dom.deleteModal.classList.add('hidden'), 200);
+                };
+
+                const handleDeleteConfirm = async (e) => {
+                    const chatId = e.target.dataset.chatId;
+                    const currentUser = auth.currentUser;
+
+                    if (!chatId || !currentUser) {
+                        alert("Error: Could not identify chat or user.");
+                        return;
+                    }
+
+                    const isDeletingActiveChat = String(chatId) === String(activeChatId);
+                    
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId).delete();
+                        delete chats[chatId]; // Update local state
+
+                        if (isDeletingActiveChat) {
+                            const remainingChatIds = Object.keys(chats);
+                            if (remainingChatIds.length > 0) {
+                                const lastChatId = Math.max(...remainingChatIds.map(Number));
+                                switchChat(String(lastChatId));
+                            } else {
+                                await createNewChat();
+                            }
+                        } else {
+                            renderChatList();
+                        }
+                    } catch (error) {
+                        console.error("Error deleting chat from Firestore:", error);
+                        alert("Error: Could not delete chat from the cloud.");
+                    } finally {
+                        closeDeleteModal();
+                    }
+                };
+
+                dom.deleteCancelBtn.addEventListener('click', closeDeleteModal);
+                dom.deleteOverlay.addEventListener('click', closeDeleteModal);
+                dom.deleteConfirmBtn.addEventListener('click', handleDeleteConfirm);
                 dom.signoutBtn.addEventListener('click', signOutUser);
 
                 isAppInitialized = true;
