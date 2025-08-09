@@ -121,6 +121,12 @@
             <div class="text-center mt-8">
                 <button id="guest-signin-btn" class="text-base text-gray-500 dark:text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400 font-medium transition-colors focus:outline-none">Continue as Guest</button>
             </div>
+             <footer class="text-center py-4 mt-4">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    &copy; <script>document.write(new Date().getFullYear())</script> Basith AbuSyed. All rights reserved.<br>
+                    This site is under active development. Check back occasionally for new features.
+                </p>
+            </footer>
         </div>
     </section>
 
@@ -212,6 +218,12 @@
                     </div>
                 </div>
             </div>
+            <footer class="text-center py-2">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    &copy; <script>document.write(new Date().getFullYear())</script> Basith AbuSyed. All rights reserved.<br>
+                    This site is under active development. Check back occasionally for new features.
+                </p>
+            </footer>
         </main>
     </div>
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
@@ -231,8 +243,6 @@
     
     <!-- NEW Hidden file input for importing -->
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
-
-     </div> 
 
          <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -256,17 +266,15 @@ const firebaseConfig = {
 
     
             const MODEL_CONFIG = {
-                'google/gemini-1.5-flash-latest': { name: 'Gemini 1.5 Flash', color: 'gemini' },
-                'google/gemini-1.5-pro-latest': { name: 'Gemini 1.5 Pro', color: 'gemini-pro' },
-                'deepseek/deepseek-chat': { name: 'DeepSeek V2 (Free)', color: 'deepseek-v3' },
-                'deepseek/deepseek-coder': { name: 'DeepSeek Coder (Free)', color: 'deepseek-r1' },
-                'qwen/qwen-2-72b-instruct': { name: 'Qwen2 72B (Free)', color: 'qwen-32b' },
-                'mistralai/mistral-large-latest': { name: 'Mistral Large', color: 'qwen-235b' }
+                'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini' },
+                'google/gemini-2.0-flash-001': { name: 'Gemini 2.0 Flash', color: 'gemini-pro' },
+                'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3', color: 'deepseek-v3' },
+                'deepseek/deepseek-r1:free': { name: 'DeepSeek R1', color: 'deepseek-r1' },
+                'qwen/qwen3-235b-a22b:free': { name: 'Qwen3 235B', color: 'qwen-32b' },
+                'mistralai/mistral-nemo:free': { name: 'Mistral', color: 'qwen-235b' }
             };
 
-            // =================================================================================
-            // DOM ELEMENT REFERENCES
-            // =================================================================================
+            
             const dom = {
                 authSection: document.getElementById('auth-section'),
                 appContainer: document.getElementById('app-container'),
@@ -512,7 +520,17 @@ const firebaseConfig = {
 
                 const avatarHtml = isUser ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
                 const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
-                let messageContent = isUser ? text.replace(/</g, "<").replace(/>/g, ">") : marked.parse(text);
+                let messageContent;
+if (isUser) {
+    messageContent = text.replace(/</g, "<").replace(/>/g, ">");
+} else {
+    // For bot messages, we create a container that we can stream content into.
+    // The 'isHistory' flag means we are just loading old messages, so we render the full text.
+    const uniqueId = `bot-msg-${Date.now()}`;
+    messageContent = isHistory 
+        ? marked.parse(text) 
+        : `<span id="${uniqueId}"></span><span class="blinking-cursor">|</span>`;
+}
                 messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
                 dom.chatHistory.appendChild(messageEl);
                 if (!isUser) {
@@ -526,102 +544,212 @@ const firebaseConfig = {
                 dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
             };
             
-            const showTypingIndicator = () => {
-                removeTypingIndicator(); // Remove any existing one
-                const chat = chats[activeChatId]; if (!chat) return;
-                const modelConf = MODEL_CONFIG[chat.model] || { name: 'AI', color: 'indigo-600' };
-                const typingEl = document.createElement('div');
-                typingEl.id = 'typingIndicator';
-                typingEl.className = 'flex items-center justify-start';
-                typingEl.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0">
-                        <span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span>
-                    </div>
-                    <div class="bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm chat-bubble p-4">
-                        <div class="typing-indicator text-${modelConf.color}"><span></span><span></span><span></span></div>
-                    </div>`;
-                dom.chatHistory.appendChild(typingEl);
-                dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-            };
-            const removeTypingIndicator = () => document.getElementById('typingIndicator')?.remove();
+            
 
             const sendMessage = async () => {
-                const message = dom.messageInput.value.trim(); if (!message) return;
-                const currentChat = chats[activeChatId]; appendMessage('user', message);
+                const message = dom.messageInput.value.trim();
+                if (!message || !activeChatId) return;
+
+                const currentChat = chats[activeChatId];
+                if (!currentChat) return;
+                
+                appendMessage('user', message);
                 currentChat.messages.push({ role: 'user', content: message });
+
                 if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
                     currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
                     renderChatList();
                 }
-                dom.messageInput.value = ''; dom.messageInput.style.height = 'auto';
-                showTypingIndicator();
-                const messagesToSend = [ { role: 'system', content: currentChat.systemPrompt }, ...currentChat.messages.filter(m => m.role !== 'system').slice(-10) ];
+
+                dom.messageInput.value = '';
+                dom.messageInput.style.height = 'auto';
+                dom.messageInput.focus();
+
+                appendMessage('assistant', ''); 
+                const allBotMessages = dom.chatHistory.querySelectorAll('.prose > span[id^="bot-msg-"]');
+                const latestBotMessageSpan = allBotMessages[allBotMessages.length - 1];
+                if (!latestBotMessageSpan) return;
+
+                                const messagesToSend = [
+                    { role: 'system', content: currentChat.systemPrompt },
+                    // Send the last 10 user/assistant messages from the current chat
+                    ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10) 
+                ];
+
                 const currentUser = auth.currentUser;
                 if (!currentUser) {
-                    removeTypingIndicator();
-                    appendMessage('assistant', '<strong>Authentication Error:</strong> You are not signed in. Please refresh and sign in again.');
+                    latestBotMessageSpan.innerHTML = "<strong>Authentication Error:</strong> You are not signed in.";
                     return;
                 }
+
                 try {
                     const idToken = await currentUser.getIdToken(true);
-                    const res = await fetch('/api/chat', { 
-                        method: 'POST', 
-                        headers: { 
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${idToken}`
-                        }, 
-                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }) 
+                    
+                    const response = await fetch('/api/chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend })
                     });
-                    removeTypingIndicator();
-                    if (!res.ok) {
-                        const errorData = await res.json();
-                        const errorMsg = `<strong>API Error:</strong> ${errorData.error?.message || 'An unknown error occurred.'}`;
-                        appendMessage('assistant', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-                    } else {
-                        const data = await res.json();
-                        const reply = data.choices[0].message.content;
-                        appendMessage('assistant', reply); currentChat.messages.push({ role: 'assistant', content: reply });
+
+                    if (!response.body) throw new Error("Response body is missing.");
+                    
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+let fullReply = "";
+let buffer = "";
+
+console.log("Starting to process streaming response...");
+
+while (true) {
+    const { done, value } = await reader.read();
+    if (done) {
+        console.log("Stream completed");
+        break;
+    }
+
+    const chunk = decoder.decode(value, { stream: true });
+    console.log("Raw chunk received:", chunk);
+    buffer += chunk;
+    
+    // Process complete lines ending with \n\n
+    while (buffer.includes('\n\n')) {
+        const endOfChunk = buffer.indexOf('\n\n');
+        const completeLine = buffer.substring(0, endOfChunk).trim();
+        buffer = buffer.substring(endOfChunk + 2);
+
+        console.log("Processing complete line:", completeLine);
+
+        // Handle error events
+        if (completeLine.startsWith('event: error')) {
+            const dataLine = completeLine.split('\n').find(l => l.startsWith('data: '));
+            if (dataLine) {
+                try {
+                    const errorPayload = JSON.parse(dataLine.substring(6));
+                    const friendlyError = (errorPayload.message && errorPayload.message.includes("429")) 
+                        ? `<strong>Rate Limit Exceeded:</strong> The AI provider is busy. Please wait a moment and try again.`
+                        : `<strong>Server Error:</strong> ${errorPayload.message}`;
+                    latestBotMessageSpan.innerHTML = friendlyError;
+                } catch (e) { 
+                    latestBotMessageSpan.innerHTML = `<strong>An unreadable error occurred.</strong>`; 
+                }
+            }
+            return;
+        }
+        
+        // Process data lines
+        if (completeLine.startsWith('data: ')) {
+            const jsonStr = completeLine.substring(6).trim();
+            if (jsonStr === '[DONE]' || jsonStr === '') continue;
+            
+            try {
+                const parsed = JSON.parse(jsonStr);
+               console.log("Parsed JSON:", parsed);
+                
+                // Extract text content from different API formats
+                let textChunk = '';
+                
+                // More thorough Google Gemini format checking
+                if (parsed.candidates) {
+                    console.log("Google response structure:", JSON.stringify(parsed.candidates, null, 2));
+                    if (parsed.candidates[0]?.content?.parts?.[0]?.text) {
+                        textChunk = parsed.candidates[0].content.parts[0].text;
+                    } else if (parsed.candidates[0]?.content?.parts) {
+                        // Check all parts for text
+                        for (const part of parsed.candidates[0].content.parts) {
+                            if (part.text) {
+                                textChunk += part.text;
+                            }
+                        }
                     }
-                } catch (error) {
-                    removeTypingIndicator();
-                    console.error("Fetch error:", error);
-                    const errorMsg = `<strong>Network Error:</strong> Could not connect to the server. Check your connection or the server status.`;
-                    appendMessage('assistant', errorMsg); currentChat.messages.push({ role: 'assistant', content: errorMsg });
-                } finally {
+                }
+                else if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
+                    textChunk = parsed.choices[0].delta.content || '';
+                }
+                
+                if (textChunk) {
+                    console.log("Text chunk extracted:", textChunk);
+                    fullReply += textChunk;
+                    // Update the display with current content plus cursor
+                    latestBotMessageSpan.innerHTML = marked.parse(fullReply) + '<span class="streaming-cursor">▋</span>';
+                }
+            } catch (e) { 
+                console.warn("Could not parse JSON chunk:", jsonStr, "Error:", e);
+            }
+        }
+    }
+    
+    // Scroll to bottom
+    dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+}
+
+// Final render without cursor
+latestBotMessageSpan.innerHTML = marked.parse(fullReply);
+
+// Remove any streaming cursor elements
+const streamingCursor = latestBotMessageSpan.querySelector('.streaming-cursor');
+if (streamingCursor) streamingCursor.remove();
+
+// Remove the original blinking cursor if it exists
+const blinkingCursor = latestBotMessageSpan.nextElementSibling;
+if (blinkingCursor && blinkingCursor.classList.contains('blinking-cursor')) {
+    blinkingCursor.remove();
+}
+
+console.log("Final reply:", fullReply);
+                    
+                    latestBotMessageSpan.closest('.prose').querySelectorAll('pre code').forEach(block => {
+                        const pre = block.parentElement;
+                        if (pre.querySelector('.copy-code-btn')) return;
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'copy-code-btn'; 
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.addEventListener('click', () => { 
+                            navigator.clipboard.writeText(block.textContent).then(() => { 
+                                copyBtn.textContent = 'Copied!'; 
+                                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
+                            }); 
+                        });
+                        pre.appendChild(copyBtn);
+                        hljs.highlightElement(block);
+                    });
+
+                    currentChat.messages.push({ role: 'assistant', content: fullReply });
                     saveChats();
+
+                } catch (error) {
+                    console.error("sendMessage stream error:", error);
+                    latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
                 }
             };
-
-            const startVoiceRecognition = () => {
-                if (!recognition) {
-                    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-                    if (!SpeechRecognition) {
-                        alert("Speech Recognition not supported in your browser.");
-                        return;
-                    }
-                    recognition = new SpeechRecognition();
-                    recognition.continuous = false;
-                    recognition.lang = 'en-US';
-                    recognition.interimResults = false;
-                    recognition.maxAlternatives = 1;
-
-                    recognition.onresult = (event) => {
-                        const transcript = event.results[0][0].transcript;
-                        dom.messageInput.value = dom.messageInput.value + transcript;
-                        dom.messageInput.dispatchEvent(new Event('input')); // Trigger auto-resize
-                    };
-                    recognition.onend = () => {
-                        dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
-                    };
-                    recognition.onerror = (event) => {
-                        console.error("Speech recognition error", event.error);
-                        dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
-                    };
+                const startVoiceRecognition = () => {
+            if (!recognition) {
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert("Speech Recognition not supported in your browser.");
+                    return;
                 }
-                dom.voiceBtn.classList.add('voice-pulse', 'text-red-500');
-                recognition.start();
-            };
+                recognition = new SpeechRecognition();
+                recognition.continuous = false;
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
 
+                recognition.onresult = (event) => {
+                    const transcript = event.results[0][0].transcript;
+                    dom.messageInput.value = dom.messageInput.value + transcript;
+                    dom.messageInput.dispatchEvent(new Event('input')); 
+                };
+                recognition.onend = () => {
+                    dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
+                };
+                recognition.onerror = (event) => {
+                    console.error("Speech recognition error", event.error);
+                    dom.voiceBtn.classList.remove('voice-pulse', 'text-red-500');
+                };
+            }
+            dom.voiceBtn.classList.add('voice-pulse', 'text-red-500');
+            recognition.start();
+        };
             // =================================================================================
             // APPLICATION INITIALIZATION AND EVENT LISTENERS
             // =================================================================================
