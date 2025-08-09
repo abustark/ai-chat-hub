@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABot | Multi-Model Assistant</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- Libraries for Markdown and Code Highlighting -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+        <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <script>
 
         tailwind.config = {
@@ -507,42 +507,64 @@ const firebaseConfig = {
                 switchChat(newChatId);
             };
 
-            const appendMessage = (sender, text, isHistory = false) => {
-                const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; const isUser = role === 'user';
-                const currentChat = chats[activeChatId]; if (!currentChat) return;
+             const appendMessage = (sender, text, isHistory = false) => {
+                const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; 
+                const isUser = role === 'user';
+                const currentChat = chats[activeChatId]; 
+                if (!currentChat) return;
+
                 const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
                 const userBubbleColor = `bg-${modelConf.color}`;
                 const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
                 const justifyClass = isUser ? 'justify-end' : 'justify-start';
                 
                 let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
-                if(auth.currentUser && !auth.currentUser.isAnonymous) {
+                if (auth.currentUser && !auth.currentUser.isAnonymous) {
                    userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
                 }
 
-                const avatarHtml = isUser ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
-                const messageEl = document.createElement('div'); if (!isHistory) messageEl.className = 'message-enter';
+                const avatarHtml = isUser 
+                    ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` 
+                    : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
+                
+                const messageEl = document.createElement('div'); 
+                if (!isHistory) messageEl.className = 'message-enter';
+
                 let messageContent;
-if (isUser) {
-    messageContent = text.replace(/</g, "<").replace(/>/g, ">");
-} else {
-    // For bot messages, we create a container that we can stream content into.
-    // The 'isHistory' flag means we are just loading old messages, so we render the full text.
-    const uniqueId = `bot-msg-${Date.now()}`;
-    messageContent = isHistory 
-        ? marked.parse(text) 
-        : `<span id="${uniqueId}"></span><span class="blinking-cursor">|</span>`;
-}
-                messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div>${isHistory ? '' : `<div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2">${getTimestamp()}</div>`}</div>${isUser ? avatarHtml : ''}</div>`;
+                if (isUser) {
+                    // For user messages, just escape the text to prevent HTML injection
+                    messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                } else {
+                    // For bot messages, prepare the container for streaming or render the full markdown
+                    const uniqueId = `bot-msg-${Date.now()}`;
+                    messageContent = isHistory 
+                        ? marked.parse(text) 
+                        : `<span id="${uniqueId}"></span><span class="blinking-cursor">▋</span>`;
+                }
+
+                // **THIS IS THE UPDATED LINE:** The div wrapping messageContent now has the "prose" classes.
+                messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>${isUser ? avatarHtml : ''}</div>`;
+                
                 dom.chatHistory.appendChild(messageEl);
-                if (!isUser) {
+
+                // For bot messages that are loaded from history, apply syntax highlighting immediately.
+                if (!isUser && isHistory) {
                     messageEl.querySelectorAll('pre code').forEach(block => {
-                        const pre = block.parentElement; const copyBtn = document.createElement('button');
-                        copyBtn.className = 'copy-code-btn'; copyBtn.textContent = 'Copy';
-                        copyBtn.addEventListener('click', () => { navigator.clipboard.writeText(block.textContent).then(() => { copyBtn.textContent = 'Copied!'; setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); }); });
-                        pre.appendChild(copyBtn); hljs.highlightElement(block);
+                        const pre = block.parentElement; 
+                        const copyBtn = document.createElement('button');
+                        copyBtn.className = 'copy-code-btn'; 
+                        copyBtn.textContent = 'Copy';
+                        copyBtn.addEventListener('click', () => { 
+                            navigator.clipboard.writeText(block.textContent).then(() => { 
+                                copyBtn.textContent = 'Copied!'; 
+                                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
+                            }); 
+                        });
+                        pre.appendChild(copyBtn); 
+                        hljs.highlightElement(block);
                     });
                 }
+
                 dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
             };
             
