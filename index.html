@@ -265,6 +265,7 @@ const firebaseConfig = {
    firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
 
+    const db = firebase.firestore(); // Initialize the Firestore database
     
             const MODEL_CONFIG = {
 
@@ -384,8 +385,29 @@ const firebaseConfig = {
             // CORE CHAT APPLICATION FUNCTIONS
             // =================================================================================
             const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const saveChats = () => localStorage.setItem('ai-chat-hub-history', JSON.stringify(chats));
-            const loadChats = () => JSON.parse(localStorage.getItem('ai-chat-hub-history') || '{}');
+                        const loadUserChatsFromFirestore = async (userId) => {
+                const chatsCollectionRef = db.collection('users').doc(userId).collection('chats');
+                try {
+                    const snapshot = await chatsCollectionRef.orderBy('id', 'desc').get();
+                    if (snapshot.empty) {
+                        console.log("No chats found for user, creating a new one.");
+                        return false; // Signal that we need to create a new chat
+                    }
+                    
+                    const remoteChats = {};
+                    snapshot.forEach(doc => {
+                        remoteChats[doc.id] = doc.data();
+                    });
+                    chats = remoteChats; // Overwrite local chats with cloud data
+                    return true; // Signal that chats were loaded successfully
+
+                } catch (error) {
+                    console.error("Error loading chats from Firestore:", error);
+                    // Handle error, maybe show a notification to the user
+                    dom.chatList.innerHTML = `<div class="p-4 text-sm text-red-500">Could not load chats.</div>`;
+                    return false;
+                }
+            };
             const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
             
             const applyModelColorTheme = (colorName) => {
@@ -409,8 +431,34 @@ const firebaseConfig = {
             
             const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
             const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
-            const saveSystemPrompt = () => { if (!activeChatId) return; chats[activeChatId].systemPrompt = dom.promptTextarea.value.trim(); saveChats(); closePromptModal(); };
-            const renameChat = (chatId, newName) => { if (chats[chatId] && newName.trim()) { chats[chatId].name = newName.trim(); saveChats(); renderChatList(); } };
+            
+                        const saveSystemPrompt = async () => {
+                const currentUser = auth.currentUser;
+                if (!activeChatId || !currentUser) return;
+                
+                const newPrompt = dom.promptTextarea.value.trim();
+                chats[activeChatId].systemPrompt = newPrompt; // Update local state
+                
+                // Update Firestore
+                const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+                await chatDocRef.update({ systemPrompt: newPrompt }).catch(err => console.error("Failed to update prompt in DB", err));
+                
+                closePromptModal();
+            };
+
+            const renameChat = async (chatId, newName) => {
+                const currentUser = auth.currentUser;
+                const trimmedName = newName.trim();
+                if (chats[chatId] && trimmedName && currentUser) {
+                    chats[chatId].name = trimmedName; // Update local state
+
+                    // Update Firestore
+                    const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
+                    await chatDocRef.update({ name: trimmedName }).catch(err => console.error("Failed to rename chat in DB", err));
+                    
+                    renderChatList(); // Update UI
+                }
+            };
             
             const exportChat = (chatId) => {
                 if (!chats[chatId]) return;
@@ -448,20 +496,40 @@ const firebaseConfig = {
                 reader.readAsText(file);
             };
 
-            const deleteChat = (chatId) => {
-                if (!chats[chatId] || !confirm(`Are you sure you want to delete "${chats[chatId].name}"?`)) return;
+            const deleteChat = async (chatId) => {
+                const currentUser = auth.currentUser;
+                if (!currentUser || !chats[chatId]) return;
+
+                if (!confirm(`Are you sure you want to permanently delete "${chats[chatId].name}"?`)) {
+                    return;
+                }
+
                 const isDeletingActiveChat = String(chatId) === String(activeChatId);
-                delete chats[chatId];
-                saveChats();
-                if (isDeletingActiveChat) {
-                    const remainingChatIds = Object.keys(chats);
-                    if (remainingChatIds.length > 0) {
-                        switchChat(Math.max(...remainingChatIds.map(Number)));
+                
+                try {
+                    // Step 1: Delete the document from Firestore
+                    const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
+                    await chatDocRef.delete();
+
+                    // Step 2: Delete the chat from the local state object
+                    delete chats[chatId];
+                    
+                    // Step 3: Update the UI
+                    if (isDeletingActiveChat) {
+                        const remainingChatIds = Object.keys(chats);
+                        if (remainingChatIds.length > 0) {
+                            const lastChatId = Math.max(...remainingChatIds.map(Number));
+                            switchChat(String(lastChatId));
+                        } else {
+                            await createNewChat(); // Creates a new chat if none are left
+                        }
                     } else {
-                        createNewChat();
+                        renderChatList(); // Just refresh the list if a non-active chat was deleted
                     }
-                } else {
-                     renderChatList();
+
+                } catch (error) {
+                    console.error("Error deleting chat from Firestore:", error);
+                    alert("Error: Could not delete chat from the cloud.");
                 }
             };
 
@@ -486,9 +554,11 @@ const firebaseConfig = {
                 });
             };
 
+
             const renderActiveChat = () => {
                 if (!activeChatId || !chats[activeChatId]) {
-                  dom.chatHistory.innerHTML = ''; return;
+                  dom.chatHistory.innerHTML = '<div class="text-center text-gray-500 mt-10">Select a chat or start a new one.</div>'; 
+                  return;
                 }
                 const chat = chats[activeChatId];
                 dom.chatHistory.innerHTML = ''; 
@@ -498,16 +568,48 @@ const firebaseConfig = {
                 applyModelColorTheme(MODEL_CONFIG[chat.model]?.color || 'indigo-600');
             };
             
-            const switchChat = (chatId) => { activeChatId = String(chatId); renderActiveChat(); renderChatList(dom.searchChats.value); closeSidebar(); };
-            const createNewChat = () => {
-                const newChatId = String(Date.now());
-                chats[newChatId] = { id: newChatId, name: "New Chat", model: Object.keys(MODEL_CONFIG)[0], systemPrompt: "You are a helpful AI assistant.", messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }] };
-                activeChatId = newChatId;
-                saveChats();
-                switchChat(newChatId);
+            const switchChat = (chatId) => { 
+                activeChatId = String(chatId); 
+                renderActiveChat(); 
+                renderChatList(dom.searchChats.value); 
+                closeSidebar(); 
             };
 
-             const appendMessage = (sender, text, isHistory = false) => {
+            const createNewChat = async () => {
+                const currentUser = auth.currentUser;
+                if (!currentUser) {
+                    console.error("Cannot create new chat: No user is signed in.");
+                    return;
+                }
+
+                dom.newChatBtn.disabled = true;
+                dom.newChatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+
+                try {
+                    const newChatId = String(Date.now());
+                    const newChatData = {
+                        id: newChatId,
+                        name: "New Chat",
+                        model: Object.keys(MODEL_CONFIG)[0],
+                        systemPrompt: "You are a helpful AI assistant.",
+                        messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }]
+                    };
+
+                    await db.collection('users').doc(currentUser.uid).collection('chats').doc(newChatId).set(newChatData);
+                    
+                    chats[newChatId] = newChatData;
+                    
+                    switchChat(newChatId);
+
+                } catch (error) {
+                    console.error("Error creating new chat in Firestore:", error);
+                } finally {
+                    dom.newChatBtn.disabled = false;
+                    dom.newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            };
+
+            const appendMessage = (sender, text, isHistory = false) => {
                 const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; 
                 const isUser = role === 'user';
                 const currentChat = chats[activeChatId]; 
@@ -532,22 +634,18 @@ const firebaseConfig = {
 
                 let messageContent;
                 if (isUser) {
-                    // For user messages, just escape the text to prevent HTML injection
                     messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 } else {
-                    // For bot messages, prepare the container for streaming or render the full markdown
                     const uniqueId = `bot-msg-${Date.now()}`;
                     messageContent = isHistory 
                         ? marked.parse(text) 
                         : `<span id="${uniqueId}"></span><span class="blinking-cursor">▋</span>`;
                 }
 
-                // **THIS IS THE UPDATED LINE:** The div wrapping messageContent now has the "prose" classes.
                 messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>${isUser ? avatarHtml : ''}</div>`;
                 
                 dom.chatHistory.appendChild(messageEl);
 
-                // For bot messages that are loaded from history, apply syntax highlighting immediately.
                 if (!isUser && isHistory) {
                     messageEl.querySelectorAll('pre code').forEach(block => {
                         const pre = block.parentElement; 
@@ -567,8 +665,6 @@ const firebaseConfig = {
 
                 dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
             };
-            
-            
 
             const sendMessage = async () => {
                 const message = dom.messageInput.value.trim();
@@ -594,9 +690,8 @@ const firebaseConfig = {
                 const latestBotMessageSpan = allBotMessages[allBotMessages.length - 1];
                 if (!latestBotMessageSpan) return;
 
-                                const messagesToSend = [
+                const messagesToSend = [
                     { role: 'system', content: currentChat.systemPrompt },
-                    // Send the last 10 user/assistant messages from the current chat
                     ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10) 
                 ];
 
@@ -617,109 +712,54 @@ const firebaseConfig = {
 
                     if (!response.body) throw new Error("Response body is missing.");
                     
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
-let fullReply = "";
-let buffer = "";
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullReply = "";
+                    let buffer = "";
 
-console.log("Starting to process streaming response...");
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
 
-while (true) {
-    const { done, value } = await reader.read();
-    if (done) {
-        console.log("Stream completed");
-        break;
-    }
+                        buffer += decoder.decode(value, { stream: true });
+                        
+                        while (buffer.includes('\n\n')) {
+                            const endOfChunk = buffer.indexOf('\n\n');
+                            const chunk = buffer.substring(0, endOfChunk).trim();
+                            buffer = buffer.substring(endOfChunk + 2);
 
-    const chunk = decoder.decode(value, { stream: true });
-    console.log("Raw chunk received:", chunk);
-    buffer += chunk;
-    
-    // Process complete lines ending with \n\n
-    while (buffer.includes('\n\n')) {
-        const endOfChunk = buffer.indexOf('\n\n');
-        const completeLine = buffer.substring(0, endOfChunk).trim();
-        buffer = buffer.substring(endOfChunk + 2);
-
-        console.log("Processing complete line:", completeLine);
-
-        // Handle error events
-        if (completeLine.startsWith('event: error')) {
-            const dataLine = completeLine.split('\n').find(l => l.startsWith('data: '));
-            if (dataLine) {
-                try {
-                    const errorPayload = JSON.parse(dataLine.substring(6));
-                    const friendlyError = (errorPayload.message && errorPayload.message.includes("429")) 
-                        ? `<strong>Rate Limit Exceeded:</strong> The AI provider is busy. Please wait a moment and try again.`
-                        : `<strong>Server Error:</strong> ${errorPayload.message}`;
-                    latestBotMessageSpan.innerHTML = friendlyError;
-                } catch (e) { 
-                    latestBotMessageSpan.innerHTML = `<strong>An unreadable error occurred.</strong>`; 
-                }
-            }
-            return;
-        }
-        
-        // Process data lines
-        if (completeLine.startsWith('data: ')) {
-            const jsonStr = completeLine.substring(6).trim();
-            if (jsonStr === '[DONE]' || jsonStr === '') continue;
-            
-            try {
-                const parsed = JSON.parse(jsonStr);
-               console.log("Parsed JSON:", parsed);
-                
-                // Extract text content from different API formats
-                let textChunk = '';
-                
-                // More thorough Google Gemini format checking
-                if (parsed.candidates) {
-                    console.log("Google response structure:", JSON.stringify(parsed.candidates, null, 2));
-                    if (parsed.candidates[0]?.content?.parts?.[0]?.text) {
-                        textChunk = parsed.candidates[0].content.parts[0].text;
-                    } else if (parsed.candidates[0]?.content?.parts) {
-                        // Check all parts for text
-                        for (const part of parsed.candidates[0].content.parts) {
-                            if (part.text) {
-                                textChunk += part.text;
+                            if (chunk.startsWith('event: error')) {
+                                const dataLine = chunk.split('\n').find(l => l.startsWith('data: '));
+                                if (dataLine) {
+                                    const jsonStr = dataLine.substring(6);
+                                    try {
+                                        const errorPayload = JSON.parse(jsonStr);
+                                        const friendlyError = (errorPayload.message && errorPayload.message.includes("429")) 
+                                            ? `<strong>Rate Limit Exceeded:</strong> The AI provider is busy. Please wait a moment and try again.`
+                                            : `<strong>Server Error:</strong> ${errorPayload.message}`;
+                                        latestBotMessageSpan.innerHTML = friendlyError;
+                                    } catch { latestBotMessageSpan.innerHTML = `<strong>An unreadable error occurred.</strong>`; }
+                                }
+                                return;
+                            }
+                            
+                            if (chunk.startsWith('data: ')) {
+                                const jsonStr = chunk.substring(6).trim();
+                                if (jsonStr === '[DONE]') continue;
+                                try {
+                                    const parsed = JSON.parse(jsonStr);
+                                    const textChunk = (parsed.candidates?.[0]?.content?.parts?.[0]?.text) || (parsed.choices?.[0]?.delta?.content) || '';
+                                    fullReply += textChunk;
+                                    latestBotMessageSpan.innerHTML = marked.parse(fullReply + "▋");
+                                } catch (e) { 
+                                    console.warn("Could not parse JSON chunk:", jsonStr);
+                                }
                             }
                         }
+                        dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
                     }
-                }
-                else if (parsed.choices && parsed.choices[0] && parsed.choices[0].delta) {
-                    textChunk = parsed.choices[0].delta.content || '';
-                }
-                
-                if (textChunk) {
-                    console.log("Text chunk extracted:", textChunk);
-                    fullReply += textChunk;
-                    // Update the display with current content plus cursor
-                    latestBotMessageSpan.innerHTML = marked.parse(fullReply) + '<span class="streaming-cursor">▋</span>';
-                }
-            } catch (e) { 
-                console.warn("Could not parse JSON chunk:", jsonStr, "Error:", e);
-            }
-        }
-    }
-    
-    // Scroll to bottom
-    dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-}
 
-// Final render without cursor
-latestBotMessageSpan.innerHTML = marked.parse(fullReply);
-
-// Remove any streaming cursor elements
-const streamingCursor = latestBotMessageSpan.querySelector('.streaming-cursor');
-if (streamingCursor) streamingCursor.remove();
-
-// Remove the original blinking cursor if it exists
-const blinkingCursor = latestBotMessageSpan.nextElementSibling;
-if (blinkingCursor && blinkingCursor.classList.contains('blinking-cursor')) {
-    blinkingCursor.remove();
-}
-
-console.log("Final reply:", fullReply);
+                    latestBotMessageSpan.innerHTML = marked.parse(fullReply);
                     
                     latestBotMessageSpan.closest('.prose').querySelectorAll('pre code').forEach(block => {
                         const pre = block.parentElement;
@@ -738,13 +778,23 @@ console.log("Final reply:", fullReply);
                     });
 
                     currentChat.messages.push({ role: 'assistant', content: fullReply });
-                    saveChats();
+                    
+                    try {
+                        const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+                        await chatDocRef.update({
+                            messages: currentChat.messages,
+                            name: currentChat.name
+                        });
+                    } catch (dbError) {
+                        console.error("Error saving chat update to Firestore:", dbError);
+                    }
 
                 } catch (error) {
                     console.error("sendMessage stream error:", error);
                     latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
                 }
             };
+
                 const startVoiceRecognition = () => {
             if (!recognition) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -787,11 +837,37 @@ console.log("Final reply:", fullReply);
                 if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
                 dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
                 
-                Object.keys(MODEL_CONFIG).forEach(key => {
-                    const model = MODEL_CONFIG[key]; const optionEl = document.createElement('a'); optionEl.href = '#';
+                               Object.keys(MODEL_CONFIG).forEach(key => {
+                    const model = MODEL_CONFIG[key]; 
+                    const optionEl = document.createElement('a'); 
+                    optionEl.href = '#';
                     optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
-                    optionEl.textContent = model.name; optionEl.dataset.modelKey = key;
-                    optionEl.addEventListener('click', e => { e.preventDefault(); e.stopPropagation(); if (chats[activeChatId]) { chats[activeChatId].model = key; saveChats(); dom.modelSelectorLabel.textContent = model.name; dom.modelIndicatorPill.textContent = model.name; applyModelColorTheme(model.color); } dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); });
+                    optionEl.textContent = model.name; 
+                    optionEl.dataset.modelKey = key;
+                    
+                    optionEl.addEventListener('click', async (e) => { 
+                        e.preventDefault(); 
+                        e.stopPropagation(); 
+                        
+                        const currentUser = auth.currentUser;
+                        if (chats[activeChatId] && currentUser) { 
+                            chats[activeChatId].model = key; // Update local state
+                            
+                            // Update Firestore
+                            const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+                            await chatDocRef.update({ model: key }).catch(err => console.error("Failed to update model in DB", err));
+
+                            // Update UI
+                            dom.modelSelectorLabel.textContent = model.name; 
+                            dom.modelIndicatorPill.textContent = model.name; 
+                            applyModelColorTheme(model.color); 
+                        } 
+                        
+                        // Close dropdown
+                        dom.modelSelectorPanel.style.opacity = '0'; 
+                        dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
+                        setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); 
+                    });
                     dom.modelSelectorPanel.appendChild(optionEl);
                 });
 
@@ -867,13 +943,14 @@ console.log("Final reply:", fullReply);
 
 
             // --- CENTRAL AUTH STATE CONTROLLER ---
-            auth.onAuthStateChanged(user => {
+                        auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     dom.appContainer.style.display = 'flex';
                     dom.authSection.style.display = 'none';
                     
-                    initApp(); // Initialize app elements, including sidebar ones
+                    initApp(); // Initialize app elements
 
+                    // Update user display info
                     if (user.isAnonymous) {
                         dom.userEmailDisplay.textContent = 'Guest User';
                         dom.userAvatar.src = `https://i.pravatar.cc/40?u=guest`;
@@ -882,18 +959,26 @@ console.log("Final reply:", fullReply);
                         dom.userAvatar.src = user.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`;
                     }
                     
-                    chats = loadChats();
-                    if (Object.keys(chats).length === 0) {
-                        createNewChat();
-                    } else {
+                    // Load chats from Firestore
+                    const chatsLoaded = await loadUserChatsFromFirestore(user.uid);
+
+                    if (chatsLoaded) {
                         // Find the most recent chat to load
                         const lastChatId = Math.max(...Object.keys(chats).map(Number));
                         switchChat(String(lastChatId));
+                    } else {
+                       
+                        console.log("Next step: Implement createNewChat for Firestore.");
+                        createNewChat(); // This function will be updated next
                     }
+
                 } else {
+                    // User is signed out
                     dom.appContainer.style.display = 'none';
                     dom.authSection.style.display = 'flex';
                     isAppInitialized = false; // Reset app state on logout
+                    chats = {}; // Clear local chat data
+                    activeChatId = null;
                     showLoginView();
                 }
             });
