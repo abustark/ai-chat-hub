@@ -203,13 +203,20 @@
         </header>
         
         <main class="flex-1 flex flex-col overflow-hidden min-h-0">
-        <div class="px-6 pt-2.5 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                <div class="relative">
-                     <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-base font-medium focus:outline-none">
-                       <span id="modelSelectorLabel"></span>
-                       <svg class="w-5 h-5 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </button>
-                    <div id="modelSelectorPanel" class="modal-transition absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
+                    <div id="chatHeader" class="px-6 pt-2.5 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                <div class="flex-1 min-w-0">
+                    <!-- This span will display the chat name -->
+                    <span id="chatTitle" class="text-base font-medium truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">New Chat</span>
+                    <!-- This input will be shown for renaming -->
+                    <input type="text" id="chatTitleInput" class="text-base font-medium bg-transparent border-b-2 border-indigo-500 focus:outline-none w-full hidden">
+                    
+                    <div class="relative inline-block">
+                        <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-xs text-gray-500 focus:outline-none">
+                           <span id="modelSelectorLabel"></span>
+                           <svg class="w-4 h-4 ml-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                        </button>
+                        <div id="modelSelectorPanel" class="modal-transition absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
+                    </div>
                 </div>
                 <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                     <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
@@ -367,6 +374,8 @@ const firebaseConfig = {
                 modelSelectorBtn: document.getElementById('modelSelectorBtn'), 
                 modelSelectorLabel: document.getElementById('modelSelectorLabel'), 
                 modelSelectorPanel: document.getElementById( 'modelSelectorPanel' ),
+                chatTitle: document.getElementById('chatTitle'),
+                chatTitleInput: document.getElementById('chatTitleInput'),
                 promptBtn: document.getElementById('promptBtn'), 
                 promptModal: document.getElementById('promptModal'), 
                 promptOverlay: document.getElementById('promptOverlay'),
@@ -640,12 +649,17 @@ const firebaseConfig = {
 
             const renderActiveChat = () => {
                 if (!activeChatId || !chats[activeChatId]) {
-                  dom.chatHistory.innerHTML = '<div class="text-center text-gray-500 mt-10">Select a chat or start a new one.</div>'; 
+                  dom.chatHistory.innerHTML = '<div class="text-center text-gray-500 mt-10">Select a chat or start a new one.</div>';
+                  dom.chatTitle.textContent = "No Chat Selected";
                   return;
                 }
                 const chat = chats[activeChatId];
-                dom.chatHistory.innerHTML = ''; 
+                dom.chatHistory.innerHTML = '';
                 chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
+
+                // Update header elements
+                dom.chatTitle.textContent = chat.name;
+                dom.chatTitleInput.value = chat.name;
                 dom.modelSelectorLabel.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
                 dom.modelIndicatorPill.textContent = MODEL_CONFIG[chat.model]?.name || 'Select Model';
                 applyModelColorTheme(MODEL_CONFIG[chat.model]?.color || 'indigo-600');
@@ -1007,6 +1021,39 @@ const firebaseConfig = {
                 dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
                 dom.sidebarOverlay.addEventListener('click', closeSidebar);
                 dom.searchChats.addEventListener('input', (e) => renderChatList(e.target.value));
+
+                                // --- Inline Chat Title Rename Listeners ---
+                const switchToTitleView = () => {
+                    dom.chatTitle.classList.remove('hidden');
+                    dom.chatTitleInput.classList.add('hidden');
+                };
+
+                const saveTitleEdit = () => {
+                    const newName = dom.chatTitleInput.value.trim();
+                    if (newName && newName !== chats[activeChatId].name) {
+                        renameChat(activeChatId, newName);
+                    }
+                    switchToTitleView();
+                };
+
+                dom.chatTitle.addEventListener('click', () => {
+                    if (!activeChatId) return;
+                    dom.chatTitle.classList.add('hidden');
+                    dom.chatTitleInput.classList.remove('hidden');
+                    dom.chatTitleInput.focus();
+                    dom.chatTitleInput.select();
+                });
+
+                dom.chatTitleInput.addEventListener('blur', saveTitleEdit);
+                dom.chatTitleInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        saveTitleEdit();
+                    } else if (e.key === 'Escape') {
+                        dom.chatTitleInput.value = chats[activeChatId].name; // Reset to original name
+                        switchToTitleView();
+                    }
+                });
+                
                 
                 // --- Modal & Import/Export Listeners ---
                 dom.promptBtn.addEventListener('click', openPromptModal);
