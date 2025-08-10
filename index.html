@@ -143,9 +143,19 @@
      <aside id="sidebar" class="bg-white dark:bg-gray-900 w-64 flex-shrink-0 flex flex-col border-r border-gray-200 dark:border-gray-700 transform -translate-x-full fixed md:static h-full z-20 sidebar md:translate-x-0">
 
         <div class="p-4 border-b border-gray-200 dark:border-gray-700 space-y-4">
-            <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>New Chat
-            </button>
+            <!-- NEW Code to Add -->
+            <div class="relative">
+                <button id="newChatBtn" class="w-full text-white py-2 rounded-lg font-medium flex items-center justify-center transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+                    New Chat
+                </button>
+                <div id="new-chat-spinner" class="absolute right-3 top-1/2 -translate-y-1/2 hidden">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </div>
+            </div>
             <div class="relative">
                 <input type="search" id="searchChats" class="w-full pl-8 pr-2 py-1.5 text-sm rounded-md border bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="Search chats...">
                 <svg class="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
@@ -272,9 +282,11 @@
     </div>
 
     <!-- Toast Notification -->
-    <div id="toast-notification" class="fixed top-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-4 text-gray-500 bg-white divide-x divide-gray-200 rounded-lg shadow dark:text-gray-400 dark:divide-gray-700 dark:bg-gray-800 hidden transition-transform duration-300 translate-x-full" role="alert">
-        <div id="toast-icon" class="text-xl"></div>
-        <div id="toast-message" class="pl-4 text-sm font-normal"></div>
+    <div id="toast-notification" class="fixed top-5 right-5 z-50 flex items-center w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-lg dark:text-gray-300 dark:bg-slate-800 hidden" role="alert" style="transform: translateX(150%); transition: transform 0.4s ease;">
+    <div id="toast-icon" class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 rounded-lg">
+            <!-- Icon will be dynamically inserted here -->
+        </div>
+        <div id="toast-message" class="ml-3 text-sm font-normal">Message goes here.</div>
     </div>
 
 
@@ -341,7 +353,8 @@ const firebaseConfig = {
                 sidebar: document.getElementById('sidebar'), 
                 sidebarToggle: document.getElementById('sidebarToggle'),
                 sidebarOverlay: document.getElementById('sidebarOverlay'), 
-                voiceBtn: document.getElementById('voiceBtn'), 
+                voiceBtn: document.getElementById('voiceBtn'),
+                newChatSpinner: document.getElementById('new-chat-spinner'), 
                 newChatBtn: document.getElementById('newChatBtn'),
                 chatList: document.getElementById('chatList'), 
                 modelIndicatorPill: document.getElementById('modelIndicatorPill'),
@@ -424,29 +437,27 @@ const firebaseConfig = {
                 auth.signOut().catch((error) => console.error('Sign out error', error));
             };
 
-                        const showToast = (message, type = 'success') => {
-                // Set message
+                                    const showToast = (message, type = 'success') => {
                 dom.toastMessage.textContent = message;
 
-                // Set icon and colors based on type
+                const successClasses = ['bg-green-100', 'dark:bg-green-800', 'text-green-500', 'dark:text-green-200'];
+                const errorClasses = ['bg-red-100', 'dark:bg-red-800', 'text-red-500', 'dark:text-red-200'];
+
+                dom.toastIcon.classList.remove(...successClasses, ...errorClasses);
+
                 if (type === 'success') {
-                    dom.toastIcon.innerHTML = '✅';
-                    dom.toastNotification.classList.remove('bg-red-100', 'dark:bg-red-900/50');
-                    dom.toastNotification.classList.add('bg-green-100', 'dark:bg-green-900/50');
+                    dom.toastIcon.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>`;
+                    dom.toastIcon.classList.add(...successClasses);
                 } else { // error
-                    dom.toastIcon.innerHTML = '❌';
-                    dom.toastNotification.classList.remove('bg-green-100', 'dark:bg-green-900/50');
-                    dom.toastNotification.classList.add('bg-red-100', 'dark:bg-red-900/50');
+                    dom.toastIcon.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.607a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>`;
+                    dom.toastIcon.classList.add(...errorClasses);
                 }
 
-                // Show the toast with a slide-in animation
-                dom.toastNotification.classList.remove('hidden', 'translate-x-full');
-                dom.toastNotification.classList.add('translate-x-0');
+                dom.toastNotification.classList.remove('hidden');
+                dom.toastNotification.style.transform = 'translateX(0)';
 
-                // Hide the toast after 4 seconds
                 setTimeout(() => {
-                    dom.toastNotification.classList.remove('translate-x-0');
-                    dom.toastNotification.classList.add('translate-x-full');
+                    dom.toastNotification.style.transform = 'translateX(150%)';
                 }, 4000);
             };
 
@@ -546,21 +557,39 @@ const firebaseConfig = {
                 showToast("Chat exported successfully!");
             };
 
-            const importChat = (file) => {
+                        const importChat = (file) => {
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = async (e) => {
+                    const currentUser = auth.currentUser;
+                    if (!currentUser) {
+                        showToast("You must be logged in to import chats.", "error");
+                        return;
+                    }
+
                     try {
                         const importedChat = JSON.parse(e.target.result);
-                        if (importedChat.id && importedChat.name && Array.isArray(importedChat.messages)) {
-                            importedChat.id = Date.now(); // Assign a new unique ID
-                            chats[importedChat.id] = importedChat;
-                            saveChats();
-                            switchChat(importedChat.id);
+                        if (importedChat.name && Array.isArray(importedChat.messages)) {
+                            const newChatId = String(Date.now());
+                            const newChatData = {
+                                id: newChatId,
+                                name: importedChat.name || "Imported Chat",
+                                model: importedChat.model || Object.keys(MODEL_CONFIG)[0],
+                                systemPrompt: importedChat.systemPrompt || "You are a helpful AI assistant.",
+                                messages: importedChat.messages
+                            };
+
+                            await db.collection('users').doc(currentUser.uid).collection('chats').doc(newChatId).set(newChatData);
+
+                            chats[newChatId] = newChatData;
+                            switchChat(newChatId);
+                            showToast("Chat imported successfully!");
+
                         } else {
-                            alert('Invalid chat file format.');
+                            showToast('Invalid chat file format.', 'error');
                         }
                     } catch (err) {
-                        alert('Could not parse chat file.');
+                        console.error("Import error:", err);
+                        showToast('Could not read or parse chat file.', 'error');
                     }
                 };
                 reader.readAsText(file);
@@ -622,7 +651,7 @@ const firebaseConfig = {
                 closeSidebar(); 
             };
 
-            const createNewChat = async () => {
+                        const createNewChat = async () => {
                 const currentUser = auth.currentUser;
                 if (!currentUser) {
                     console.error("Cannot create new chat: No user is signed in.");
@@ -630,7 +659,7 @@ const firebaseConfig = {
                 }
 
                 dom.newChatBtn.disabled = true;
-                dom.newChatBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                dom.newChatSpinner.classList.remove('hidden');
 
                 try {
                     const newChatId = String(Date.now());
@@ -643,16 +672,17 @@ const firebaseConfig = {
                     };
 
                     await db.collection('users').doc(currentUser.uid).collection('chats').doc(newChatId).set(newChatData);
-                    
+
                     chats[newChatId] = newChatData;
                     
                     switchChat(newChatId);
 
                 } catch (error) {
                     console.error("Error creating new chat in Firestore:", error);
+                    showToast("Error creating chat.", "error");
                 } finally {
                     dom.newChatBtn.disabled = false;
-                    dom.newChatBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    dom.newChatSpinner.classList.add('hidden');
                 }
             };
 
@@ -1060,6 +1090,14 @@ const firebaseConfig = {
                     }
                     
                     // Load chats from Firestore
+
+                        dom.chatList.innerHTML = `
+                        <div class="p-2 space-y-2">
+                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse"></div>
+                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-5/6"></div>
+                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-4/6"></div>
+                        </div>
+                    `;
                     const chatsLoaded = await loadUserChatsFromFirestore(user.uid);
 
                     if (chatsLoaded) {
