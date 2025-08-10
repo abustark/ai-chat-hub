@@ -4,12 +4,32 @@
   "description": "Secure proxy for AI Chat Hub",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "build": "npm run build:css",
+    "build:css": "tailwindcss -i ./src/input.css -o ./dist/output.css --minify",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "firebase-admin": "^13.4.0"
-  }
+  },
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.13"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abustark/ai-chat-hub.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/abustark/ai-chat-hub/issues"
+  },
+  "homepage": "https://github.com/abustark/ai-chat-hub#readme"
 }

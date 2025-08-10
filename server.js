@@ -28,10 +28,9 @@ if (process.env.RENDER === 'true') {
 
 const app = express();
 const port = 3000;
-
+app.use(express.static('.'));
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
 
 // Middleware to verify Firebase token
 const checkAuth = async (req, res, next) => {
@@ -142,27 +141,18 @@ app.post('/api/chat', checkAuth, async (req, res) => {
                         const parsed = JSON.parse(googleBuffer.trim());
                         console.log("Google parsed response:", parsed);
                         
-                       // Extract text from Google response - handle streaming chunks
-                        if (Array.isArray(parsed)) {
-                            // Process each chunk in the array
-                            parsed.forEach(chunk => {
-                                if (chunk?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                                    const text = chunk.candidates[0].content.parts[0].text;
-                                    console.log("Extracted text chunk:", text);
-                                    
-                                    // Send each chunk as separate SSE event
-                                    const sseData = { candidates: [{ content: { parts: [{ text }] } }] };
-                                    res.write(`data: ${JSON.stringify(sseData)}\n\n`);
-                                }
-                            });
-                        } else if (parsed?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            // Handle single object format
-                            const text = parsed.candidates[0].content.parts[0].text;
+                        // Extract text from Google response (handle both array and single object)
+                        let candidates = Array.isArray(parsed) ? parsed[0]?.candidates : parsed?.candidates;
+                        
+                        if (candidates && candidates[0]?.content?.parts?.[0]?.text) {
+                            const text = candidates[0].content.parts[0].text;
                             console.log("Extracted text:", text);
                             
+                            // Send as SSE format
                             const sseData = { candidates: [{ content: { parts: [{ text }] } }] };
                             res.write(`data: ${JSON.stringify(sseData)}\n\n`);
                         }
+                        
                         // Successfully parsed, clear buffer and break
                         googleBuffer = '';
                         break;

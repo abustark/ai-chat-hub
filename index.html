@@ -1,43 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABot | Multi-Model Assistant</title>
-    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Libraries for Markdown and Code Highlighting -->
+    <link href="./dist/output.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-        <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
-    <script>
-
-        tailwind.config = {
-            darkMode: 'class',
-            safelist: [
-                'bg-gemini', 'hover:bg-gemini/90', 'text-gemini', 'border-gemini',
-                'bg-gemini-pro', 'hover:bg-gemini-pro/90', 'text-gemini-pro', 'border-gemini-pro',
-                'bg-deepseek-v3', 'hover:bg-deepseek-v3/90', 'text-deepseek-v3', 'border-deepseek-v3',
-                'bg-deepseek-r1', 'hover:bg-deepseek-r1/90', 'text-deepseek-r1', 'border-deepseek-r1',
-                'bg-qwen-32b', 'hover:bg-qwen-32b/90', 'text-qwen-32b', 'border-qwen-32b',
-                'bg-qwen-235b', 'hover:bg-qwen-235b/90', 'text-qwen-235b', 'border-qwen-235b',
-                'bg-indigo-600', 'hover:bg-indigo-700'
-            ],
-            theme: {
-                extend: {
-                    colors: {
-                        'gemini': '#f59e0b',
-                        'gemini-pro': '#22c55e',
-                        'deepseek-v3': '#4f46e5',
-                        'deepseek-r1': '#7c3aed',
-                        'qwen-32b': '#db2777',
-                        'qwen-235b': '#14b8a6',
-                    },
-                    animation: { 'pulse-slow': 'pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite' }
-                }
-            }
-        }
-    </script>
+    
     <style>
             html { font-size: 15px; }
         * { font-family: 'Inter', sans-serif; }
@@ -64,9 +35,22 @@
         .modal-transition { transition: opacity 0.2s ease, transform 0.2s ease; }
 
     </style>
+
+        <script>
+        // This script runs before the page renders to prevent theme flicker.
+        const theme = localStorage.getItem('darkMode');
+        console.log('[Head Script] localStorage theme is:', theme);
+        if (theme === 'false') {
+            // Do nothing, it's light mode.
+        } else {
+            // Default to dark mode if theme is 'true' or not set at all.
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+
 </head>
 
-<!-- Line Before -->
+
 <body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100">
 
 <section id="auth-section" class="flex items-center justify-center w-full min-h-screen p-4">
@@ -203,25 +187,35 @@
         </header>
         
         <main class="flex-1 flex flex-col overflow-hidden min-h-0">
-                    <div id="chatHeader" class="px-6 pt-2.5 pb-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                           <div id="chatHeader" class="px-6 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between min-h-[61px]">
+            <!-- Left side: Title and Rename -->
+            <div class="flex items-center gap-x-2 min-w-0">
                 <div class="flex-1 min-w-0">
-                    <!-- This span will display the chat name -->
-                    <span id="chatTitle" class="text-base font-medium truncate cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400">New Chat</span>
-                    <!-- This input will be shown for renaming -->
+                    <span id="chatTitle" class="text-base font-medium truncate">New Chat</span>
                     <input type="text" id="chatTitleInput" class="text-base font-medium bg-transparent border-b-2 border-indigo-500 focus:outline-none w-full hidden">
-                    
-                    <div class="relative inline-block">
-                        <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-transparent dark:text-gray-200 text-xs text-gray-500 focus:outline-none">
-                           <span id="modelSelectorLabel"></span>
-                           <svg class="w-4 h-4 ml-1 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                        </button>
-                        <div id="modelSelectorPanel" class="modal-transition absolute top-full left-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-left" style="transform: scale(0.95); opacity: 0;"></div>
-                    </div>
+                </div>
+                <button id="renameChatBtn" class="p-1.5 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                    <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                      <path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Right side: Controls -->
+            <div class="flex items-center space-x-1">
+                <div class="relative inline-block">
+                    <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-gray-100 dark:bg-gray-700/80 px-3 py-1.5 rounded-md text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+                       <span id="modelSelectorLabel">Select Model</span>
+                       <svg class="w-4 h-4 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                    </button>
+                    <div id="modelSelectorPanel" class="modal-transition absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-right" style="transform: scale(0.95); opacity: 0;"></div>
                 </div>
                 <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                     <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                 </button>
             </div>
+        </div>
             
             <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-custom">
             <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
@@ -310,6 +304,27 @@
         // This is the main entry point for our entire application.
         function main() {
 
+                    const COLOR_MAP = {
+            gemini: 'blue-500',
+            'gemini-pro': 'sky-500',
+            'deepseek-v3': 'green-500',
+            'deepseek-r1': 'teal-500',
+            'qwen-32b': 'orange-500',
+            'qwen-235b': 'amber-600',
+            'indigo-600': 'indigo-600' // Default
+        };
+
+        const generateColorClasses = (colorName) => {
+            const color = COLOR_MAP[colorName] || 'indigo-600';
+            return {
+                bg: `bg-${color}`,
+                hoverBg: `hover:bg-${color}/90`,
+                text: `text-${color}`,
+                border: `border-${color}`,
+                userBubbleBg: `bg-${color}`
+            };
+        };
+
 const firebaseConfig = {
   apiKey: "AIzaSyBXgaTb9XFlDS491i765UFBe325Qg4z0QE",
   authDomain: "abot-cloud.firebaseapp.com",
@@ -376,6 +391,7 @@ const firebaseConfig = {
                 modelSelectorPanel: document.getElementById( 'modelSelectorPanel' ),
                 chatTitle: document.getElementById('chatTitle'),
                 chatTitleInput: document.getElementById('chatTitleInput'),
+                renameChatBtn: document.getElementById('renameChatBtn'),
                 promptBtn: document.getElementById('promptBtn'), 
                 promptModal: document.getElementById('promptModal'), 
                 promptOverlay: document.getElementById('promptOverlay'),
@@ -506,22 +522,23 @@ const firebaseConfig = {
             };
             const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
             
-            const applyModelColorTheme = (colorName) => {
+                        const applyModelColorTheme = (colorName) => {
+                const colorClasses = generateColorClasses(colorName);
                 const elementsToColor = [dom.newChatBtn, dom.sendBtn];
-                const baseColorClass = `bg-${colorName}`;
-                const hoverColorClass = `hover:bg-${colorName}/90`;
-                const borderColorClass = `border-${colorName}`;
-                
+                const oldColors = Object.values(COLOR_MAP).flatMap(c => [`bg-${c}`, `hover:bg-${c}/90`]);
+
                 elementsToColor.forEach(el => {
-                    if(!el) return;
-                    el.className = el.className.replace(/bg-\w+-?\d*/g, '').replace(/hover:bg-\w+-?\d*\/?\d*/g, '');
-                    el.classList.add(baseColorClass, hoverColorClass);
+                    if (!el) return;
+                    el.classList.remove(...oldColors);
+                    el.classList.add(colorClasses.bg, colorClasses.hoverBg);
                 });
-                
+
                 const pill = dom.modelIndicatorPill;
-                if(pill) {
-                    pill.className = pill.className.replace(/text-\w+-?\d*/g, '').replace(/border-\w+-?\d*/g, '');
-                    pill.classList.add(`text-${colorName}`, `border-${colorName}`);
+                if (pill) {
+                    const oldTextColors = Object.values(COLOR_MAP).map(c => `text-${c}`);
+                    const oldBorderColors = Object.values(COLOR_MAP).map(c => `border-${c}`);
+                    pill.classList.remove(...oldTextColors, ...oldBorderColors);
+                    pill.classList.add(colorClasses.text, colorClasses.border);
                 }
             };
             
@@ -542,19 +559,23 @@ const firebaseConfig = {
                 closePromptModal();
             };
 
-            const renameChat = async (chatId, newName) => {
-                const currentUser = auth.currentUser;
-                const trimmedName = newName.trim();
-                if (chats[chatId] && trimmedName && currentUser) {
-                    chats[chatId].name = trimmedName; // Update local state
+                   const renameChat = async (chatId, newName) => {
+            const currentUser = auth.currentUser;
+            const trimmedName = newName.trim();
+            if (chats[chatId] && trimmedName && currentUser) {
+                chats[chatId].name = trimmedName; // Update local state
 
-                    // Update Firestore
-                    const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
-                    await chatDocRef.update({ name: trimmedName }).catch(err => console.error("Failed to rename chat in DB", err));
-                    
-                    renderChatList(); // Update UI
-                }
-            };
+                // IMMEDIATELY update the UI in the header
+                dom.chatTitle.textContent = trimmedName;
+                dom.chatTitleInput.value = trimmedName;
+
+                // Update Firestore
+                const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
+                await chatDocRef.update({ name: trimmedName }).catch(err => console.error("Failed to rename chat in DB", err));
+                
+                renderChatList(); // Update sidebar UI
+            }
+        };
             
             const exportChat = (chatId) => {
                 if (!chats[chatId]) return;
@@ -714,18 +735,19 @@ const firebaseConfig = {
                 if (!currentChat) return;
 
                 const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-                const userBubbleColor = `bg-${modelConf.color}`;
-                const bubbleClasses = isUser ? `user-bubble ${userBubbleColor} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
+                const colorClasses = generateColorClasses(modelConf.color);
+
+                const bubbleClasses = isUser ? `user-bubble ${colorClasses.userBubbleBg} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
                 const justifyClass = isUser ? 'justify-end' : 'justify-start';
-                
+
                 let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
                 if (auth.currentUser && !auth.currentUser.isAnonymous) {
-                   userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
+                    userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
                 }
 
-                const avatarHtml = isUser 
-                    ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">` 
-                    : `<div class="w-8 h-8 rounded-full bg-${modelConf.color} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0,2)}</span></div>`;
+                const avatarHtml = isUser
+                    ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">`
+                    : `<div class="w-8 h-8 rounded-full ${colorClasses.bg} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0, 2)}</span></div>`;
                 
                 const messageEl = document.createElement('div'); 
                 if (!isHistory) messageEl.className = 'message-enter';
@@ -955,17 +977,30 @@ const firebaseConfig = {
                 if (isAppInitialized) return; 
 
                 // --- Main App Listeners ---
-                if (localStorage.getItem('darkMode') === 'true') { 
-                    document.documentElement.classList.add('dark'); 
-                    dom.sunIcon.classList.add('hidden'); 
-                    dom.moonIcon.classList.remove('hidden'); 
+
+                if (!document.documentElement.classList.contains('dark')) {
+                    dom.sunIcon.classList.remove('hidden');
+                    dom.moonIcon.classList.add('hidden');
+                } else {
+                    dom.sunIcon.classList.add('hidden');
+                    dom.moonIcon.classList.remove('hidden');
                 }
-                dom.themeToggle.addEventListener('click', () => { 
-                    const isDark = document.documentElement.classList.toggle('dark'); 
-                    localStorage.setItem('darkMode', isDark); 
-                    dom.sunIcon.classList.toggle('hidden'); 
-                    dom.moonIcon.classList.toggle('hidden'); 
-                });
+                dom.themeToggle.addEventListener('click', () => {
+// Check the CURRENT state and reverse it.
+if (document.documentElement.classList.contains('dark')) {
+// It IS dark, so switch to LIGHT
+document.documentElement.classList.remove('dark');
+localStorage.setItem('darkMode', 'false');
+console.log('[Click Event] Switched to LIGHT mode.');
+} else {
+// It IS light, so switch to DARK
+document.documentElement.classList.add('dark');
+localStorage.setItem('darkMode', 'true');
+console.log('[Click Event] Switched to DARK mode.');
+}
+ dom.sunIcon.classList.toggle('hidden');
+                dom.moonIcon.classList.toggle('hidden');
+            });
                 
                 // --- Model Selector Listeners ---
                 Object.keys(MODEL_CONFIG).forEach(key => {
@@ -1022,37 +1057,42 @@ const firebaseConfig = {
                 dom.sidebarOverlay.addEventListener('click', closeSidebar);
                 dom.searchChats.addEventListener('input', (e) => renderChatList(e.target.value));
 
-                                // --- Inline Chat Title Rename Listeners ---
-                const switchToTitleView = () => {
-                    dom.chatTitle.classList.remove('hidden');
-                    dom.chatTitleInput.classList.add('hidden');
-                };
+                            // --- Inline Chat Title Rename Listeners ---
+            const switchToTitleView = () => {
+                dom.chatTitle.classList.remove('hidden');
+                dom.renameChatBtn.classList.remove('hidden');
+                dom.chatTitleInput.classList.add('hidden');
+            };
 
-                const saveTitleEdit = () => {
-                    const newName = dom.chatTitleInput.value.trim();
-                    if (newName && newName !== chats[activeChatId].name) {
-                        renameChat(activeChatId, newName);
+            const saveTitleEdit = () => {
+                const newName = dom.chatTitleInput.value.trim();
+                if (activeChatId && newName && chats[activeChatId] && newName !== chats[activeChatId].name) {
+                    renameChat(activeChatId, newName);
+                }
+                switchToTitleView();
+            };
+
+            dom.renameChatBtn.addEventListener('click', () => {
+                if (!activeChatId) return;
+                dom.chatTitle.classList.add('hidden');
+                dom.renameChatBtn.classList.add('hidden');
+                dom.chatTitleInput.classList.remove('hidden');
+                dom.chatTitleInput.focus();
+                dom.chatTitleInput.select();
+            });
+
+            dom.chatTitleInput.addEventListener('blur', saveTitleEdit);
+            dom.chatTitleInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveTitleEdit();
+                } else if (e.key === 'Escape') {
+                    if(activeChatId && chats[activeChatId]) {
+                        dom.chatTitleInput.value = chats[activeChatId].name;
                     }
                     switchToTitleView();
-                };
-
-                dom.chatTitle.addEventListener('click', () => {
-                    if (!activeChatId) return;
-                    dom.chatTitle.classList.add('hidden');
-                    dom.chatTitleInput.classList.remove('hidden');
-                    dom.chatTitleInput.focus();
-                    dom.chatTitleInput.select();
-                });
-
-                dom.chatTitleInput.addEventListener('blur', saveTitleEdit);
-                dom.chatTitleInput.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        saveTitleEdit();
-                    } else if (e.key === 'Escape') {
-                        dom.chatTitleInput.value = chats[activeChatId].name; // Reset to original name
-                        switchToTitleView();
-                    }
-                });
+                }
+            });
                 
                 
                 // --- Modal & Import/Export Listeners ---
@@ -1211,5 +1251,31 @@ const firebaseConfig = {
         document.addEventListener('DOMContentLoaded', main);
 
     </script>
+
+        <!--
+      Tailwind CSS Purge-Safe-List:
+      The JIT compiler can't see classes constructed dynamically in JS. This comment block lists them out
+      so Tailwind knows to include them in the production build.
+
+      Model Colors:
+      bg-blue-500 hover:bg-blue-500/90 text-blue-500 border-blue-500
+      bg-sky-500 hover:bg-sky-500/90 text-sky-500 border-sky-500
+      bg-green-500 hover:bg-green-500/90 text-green-500 border-green-500
+      bg-teal-500 hover:bg-teal-500/90 text-teal-500 border-teal-500
+      bg-orange-500 hover:bg-orange-500/90 text-orange-500 border-orange-500
+      bg-amber-600 hover:bg-amber-600/90 text-amber-600 border-amber-600
+      bg-indigo-600 hover:bg-indigo-600/90 text-indigo-600 border-indigo-600
+
+      Toast Colors:
+      bg-green-100 dark:bg-green-800 text-green-500 dark:text-green-200
+      bg-red-100 dark:bg-red-800 text-red-500 dark:text-red-200
+
+      Active Chat Item:
+      dark:bg-gray-700/50
+      dark:bg-slate-800
+      dark:bg-slate-700
+      dark:border-slate-600
+      dark:text-gray-300
+    -->
 </body>
 </html>
