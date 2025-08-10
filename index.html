@@ -249,26 +249,34 @@
     <!-- NEW Hidden file input for importing -->
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
-        <!-- Delete Confirmation Modal -->
-    <div id="deleteModal" class="fixed inset-0 z-30 flex items-center justify-center hidden">
-        <div id="deleteOverlay" class="absolute inset-0 bg-black/50"></div>
-        <div id="deletePanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm mx-4 p-6" style="transform: scale(0.95); opacity: 0;">
-            <div class="text-center">
-                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/50">
-                    <svg class="h-6 w-6 text-red-600 dark:text-red-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                    </svg>
-                </div>
-                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-gray-100">Delete Chat</h3>
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Are you sure you want to permanently delete this chat? This action cannot be undone.</p>
-                <p id="chatNameToDelete" class="mt-2 text-sm font-medium text-gray-800 dark:text-gray-200 truncate"></p>
+     <!-- NEW Code to Add -->
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-60 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="deleteOverlay" class="absolute inset-0"></div>
+        <div id="deletePanel" class="modal-transition relative z-10 w-full max-w-md p-6 mx-4 bg-white dark:bg-slate-800 rounded-lg shadow-xl" style="opacity: 0; transform: scale(0.95);">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">Confirm Deletion</h3>
+            <div class="mt-2">
+                <p class="text-sm text-gray-600 dark:text-gray-300">
+                    Are you sure you want to delete the chat: "<strong id="chatNameToDelete" class="font-medium"></strong>"? This action cannot be undone.
+                </p>
             </div>
-            <div class="mt-6 grid grid-cols-2 gap-3">
-                <button id="deleteCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
-                <button id="deleteConfirmBtn" class="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white">Delete</button>
+            <div class="mt-5 sm:mt-6 flex justify-end space-x-3">
+                <button type="button" id="deleteCancelBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white dark:bg-slate-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800">
+                    Cancel
+                </button>
+                <button type="button" id="deleteConfirmBtn" class="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-slate-800">
+                    Delete
+                </button>
             </div>
         </div>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="fixed top-5 right-5 z-50 flex items-center w-full max-w-xs p-4 space-x-4 text-gray-500 bg-white divide-x divide-gray-200 rounded-lg shadow dark:text-gray-400 dark:divide-gray-700 dark:bg-gray-800 hidden transition-transform duration-300 translate-x-full" role="alert">
+        <div id="toast-icon" class="text-xl"></div>
+        <div id="toast-message" class="pl-4 text-sm font-normal"></div>
+    </div>
+
 
          <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
@@ -319,10 +327,10 @@ const firebaseConfig = {
                 backToLogin: document.getElementById('back-to-login'),
                 googleSigninBtn: document.getElementById('google-signin-btn'),
                 guestSigninBtn: document.getElementById('guest-signin-btn'),
-                signoutBtn: null, // Will be assigned later
+                signoutBtn: document.getElementById('signoutBtn'),
                 errorMessage: document.getElementById('error-message'),
-                userAvatar: null, // Will be assigned later
-                userEmailDisplay: null, // Will be assigned later
+                userAvatar: document.getElementById('userAvatar'),
+                userEmailDisplay: document.getElementById('userEmailDisplay'),
                 themeToggle: document.getElementById('themeToggle'), 
                 sunIcon: document.getElementById('sunIcon'), 
                 moonIcon: document.getElementById('moonIcon'),
@@ -355,7 +363,10 @@ const firebaseConfig = {
                 deletePanel: document.getElementById('deletePanel'),
                 chatNameToDelete: document.getElementById('chatNameToDelete'),
                 deleteCancelBtn: document.getElementById('deleteCancelBtn'),
-                deleteConfirmBtn: document.getElementById('deleteConfirmBtn')
+                deleteConfirmBtn: document.getElementById('deleteConfirmBtn'),
+                toastNotification: document.getElementById('toast-notification'),
+                toastIcon: document.getElementById('toast-icon'),
+                toastMessage: document.getElementById('toast-message')
             };
 
             // =================================================================================
@@ -411,6 +422,32 @@ const firebaseConfig = {
 
             const signOutUser = () => {
                 auth.signOut().catch((error) => console.error('Sign out error', error));
+            };
+
+                        const showToast = (message, type = 'success') => {
+                // Set message
+                dom.toastMessage.textContent = message;
+
+                // Set icon and colors based on type
+                if (type === 'success') {
+                    dom.toastIcon.innerHTML = '✅';
+                    dom.toastNotification.classList.remove('bg-red-100', 'dark:bg-red-900/50');
+                    dom.toastNotification.classList.add('bg-green-100', 'dark:bg-green-900/50');
+                } else { // error
+                    dom.toastIcon.innerHTML = '❌';
+                    dom.toastNotification.classList.remove('bg-green-100', 'dark:bg-green-900/50');
+                    dom.toastNotification.classList.add('bg-red-100', 'dark:bg-red-900/50');
+                }
+
+                // Show the toast with a slide-in animation
+                dom.toastNotification.classList.remove('hidden', 'translate-x-full');
+                dom.toastNotification.classList.add('translate-x-0');
+
+                // Hide the toast after 4 seconds
+                setTimeout(() => {
+                    dom.toastNotification.classList.remove('translate-x-0');
+                    dom.toastNotification.classList.add('translate-x-full');
+                }, 4000);
             };
 
             // =================================================================================
@@ -506,6 +543,7 @@ const firebaseConfig = {
                 a.click();
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
+                showToast("Chat exported successfully!");
             };
 
             const importChat = (file) => {
@@ -646,9 +684,10 @@ const firebaseConfig = {
                     messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 } else {
                     const uniqueId = `bot-msg-${Date.now()}`;
-                    messageContent = isHistory 
-                        ? marked.parse(text) 
-                        : `<div class="typing-indicator"><span></span><span></span><span></span></div>`;
+                let botContent = isHistory
+                    ? marked.parse(text)
+                    : '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+                messageContent = `<span id="${uniqueId}">${botContent}</span>`;
                 }
 
                 messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>${isUser ? avatarHtml : ''}</div>`;
@@ -836,17 +875,25 @@ const firebaseConfig = {
             // =================================================================================
             // APPLICATION INITIALIZATION AND EVENT LISTENERS
             // =================================================================================
-            function initApp() {
+            
+                        function initApp() {
                 if (isAppInitialized) return; 
 
-                dom.signoutBtn = document.getElementById('signoutBtn');
-                dom.userAvatar = document.getElementById('userAvatar');
-                dom.userEmailDisplay = document.getElementById('userEmailDisplay');
-
-                if (localStorage.getItem('darkMode') === 'true') { document.documentElement.classList.add('dark'); dom.sunIcon.classList.add('hidden'); dom.moonIcon.classList.remove('hidden'); }
-                dom.themeToggle.addEventListener('click', () => { const isDark = document.documentElement.classList.toggle('dark'); localStorage.setItem('darkMode', isDark); dom.sunIcon.classList.toggle('hidden'); dom.moonIcon.classList.toggle('hidden'); });
+                // --- Main App Listeners ---
+                if (localStorage.getItem('darkMode') === 'true') { 
+                    document.documentElement.classList.add('dark'); 
+                    dom.sunIcon.classList.add('hidden'); 
+                    dom.moonIcon.classList.remove('hidden'); 
+                }
+                dom.themeToggle.addEventListener('click', () => { 
+                    const isDark = document.documentElement.classList.toggle('dark'); 
+                    localStorage.setItem('darkMode', isDark); 
+                    dom.sunIcon.classList.toggle('hidden'); 
+                    dom.moonIcon.classList.toggle('hidden'); 
+                });
                 
-                               Object.keys(MODEL_CONFIG).forEach(key => {
+                // --- Model Selector Listeners ---
+                Object.keys(MODEL_CONFIG).forEach(key => {
                     const model = MODEL_CONFIG[key]; 
                     const optionEl = document.createElement('a'); 
                     optionEl.href = '#';
@@ -857,31 +904,35 @@ const firebaseConfig = {
                     optionEl.addEventListener('click', async (e) => { 
                         e.preventDefault(); 
                         e.stopPropagation(); 
-                        
                         const currentUser = auth.currentUser;
                         if (chats[activeChatId] && currentUser) { 
-                            chats[activeChatId].model = key; // Update local state
-                            
-                            // Update Firestore
+                            chats[activeChatId].model = key;
                             const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
                             await chatDocRef.update({ model: key }).catch(err => console.error("Failed to update model in DB", err));
-
-                            // Update UI
                             dom.modelSelectorLabel.textContent = model.name; 
                             dom.modelIndicatorPill.textContent = model.name; 
                             applyModelColorTheme(model.color); 
                         } 
-                        
-                        // Close dropdown
                         dom.modelSelectorPanel.style.opacity = '0'; 
                         dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
                         setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); 
                     });
                     dom.modelSelectorPanel.appendChild(optionEl);
                 });
+                dom.modelSelectorBtn.addEventListener('click', e => { 
+                    e.stopPropagation(); 
+                    const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); 
+                    dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; 
+                    dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; 
+                });
+                document.addEventListener('click', () => { 
+                    dom.modelSelectorPanel.style.opacity = '0'; 
+                    dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
+                    setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); 
+                    document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); 
+                });
 
-                dom.modelSelectorBtn.addEventListener('click', e => { e.stopPropagation(); const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; });
-                document.addEventListener('click', () => { dom.modelSelectorPanel.style.opacity = '0'; dom.modelSelectorPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); });
+                // --- Core Interaction Listeners ---
                 dom.newChatBtn.addEventListener('click', createNewChat);
                 dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
                 dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
@@ -889,43 +940,39 @@ const firebaseConfig = {
                 dom.voiceBtn.addEventListener('click', startVoiceRecognition);
                 dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
                 dom.sidebarOverlay.addEventListener('click', closeSidebar);
+                dom.searchChats.addEventListener('input', (e) => renderChatList(e.target.value));
+                
+                // --- Modal & Import/Export Listeners ---
                 dom.promptBtn.addEventListener('click', openPromptModal);
                 dom.promptOverlay.addEventListener('click', closePromptModal);
                 dom.promptCancelBtn.addEventListener('click', closePromptModal);
                 dom.promptSaveBtn.addEventListener('click', saveSystemPrompt);
-                dom.searchChats.addEventListener('input', (e) => { renderChatList(e.target.value); });
                 dom.importChatBtn.addEventListener('click', () => dom.importFileInput.click());
                 dom.importFileInput.addEventListener('change', (e) => {
                     if (e.target.files.length > 0) { importChat(e.target.files[0]); }
-                    e.target.value = null; // Reset for same-file import
+                    e.target.value = null;
                 });
-                                // --- Delete Modal Listeners ---
+                
+                // --- Delete Modal Listeners ---
                 const closeDeleteModal = () => {
                     dom.deletePanel.style.opacity = '0';
                     dom.deletePanel.style.transform = 'scale(0.95)';
                     setTimeout(() => dom.deleteModal.classList.add('hidden'), 200);
                 };
-
                 const handleDeleteConfirm = async (e) => {
                     const chatId = e.target.dataset.chatId;
                     const currentUser = auth.currentUser;
-
                     if (!chatId || !currentUser) {
-                        alert("Error: Could not identify chat or user.");
+                        showToast("Error: Could not identify chat or user.", 'error');
                         return;
                     }
-
-                    const isDeletingActiveChat = String(chatId) === String(activeChatId);
-                    
                     try {
                         await db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId).delete();
-                        delete chats[chatId]; // Update local state
-
-                        if (isDeletingActiveChat) {
-                            const remainingChatIds = Object.keys(chats);
+                        delete chats[chatId];
+                        const remainingChatIds = Object.keys(chats);
+                        if (String(chatId) === String(activeChatId)) {
                             if (remainingChatIds.length > 0) {
-                                const lastChatId = Math.max(...remainingChatIds.map(Number));
-                                switchChat(String(lastChatId));
+                                switchChat(String(Math.max(...remainingChatIds.map(Number))));
                             } else {
                                 await createNewChat();
                             }
@@ -934,20 +981,20 @@ const firebaseConfig = {
                         }
                     } catch (error) {
                         console.error("Error deleting chat from Firestore:", error);
-                        alert("Error: Could not delete chat from the cloud.");
+                        showToast("Error: Could not delete chat from the cloud.", 'error');
                     } finally {
                         closeDeleteModal();
                     }
                 };
-
                 dom.deleteCancelBtn.addEventListener('click', closeDeleteModal);
                 dom.deleteOverlay.addEventListener('click', closeDeleteModal);
                 dom.deleteConfirmBtn.addEventListener('click', handleDeleteConfirm);
-                dom.signoutBtn.addEventListener('click', signOutUser);
 
+                // --- Final Listeners ---
+                dom.signoutBtn.addEventListener('click', signOutUser);
                 isAppInitialized = true;
             }
-
+            
             // --- ATTACH EVENT LISTENERS FOR AUTH FORMS ---
             dom.showSignup.addEventListener('click', (e) => { e.preventDefault(); showSignupView(); });
             dom.showLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
