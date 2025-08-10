@@ -224,12 +224,17 @@
             <div class="max-w-3xl mx-auto">
                     <div class="flex items-end bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
                         <textarea id="messageInput" class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none text-gray-900 dark:text-gray-200" placeholder="Message AI assistant..." rows="1"></textarea>
-                        <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                                <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" /></svg>
                         </button>
-                        <button id="sendBtn" class="p-2 text-white rounded-lg transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
-                        </button>
+                        <div class="relative flex items-center">
+                            <button id="sendBtn" class="p-2 text-white rounded-lg transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" /></svg>
+                            </button>
+                            <button id="stopBtn" class="p-2 text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8 7a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -347,7 +352,8 @@ const firebaseConfig = {
                 sunIcon: document.getElementById('sunIcon'), 
                 moonIcon: document.getElementById('moonIcon'),
                 messageInput: document.getElementById('messageInput'), 
-                sendBtn: document.getElementById('sendBtn'), 
+                sendBtn: document.getElementById('sendBtn'),
+                stopBtn: document.getElementById('stopBtn'), 
                 chatHistoryContainer: document.getElementById('chatHistoryContainer'),
                 chatHistory: document.getElementById('chatHistory'), 
                 sidebar: document.getElementById('sidebar'), 
@@ -387,6 +393,7 @@ const firebaseConfig = {
             // =================================================================================
             let chats = {};
             let activeChatId = null;
+            let abortController = null; 
             let isAppInitialized = false;
             let recognition; // For voice recognition
 
@@ -744,13 +751,15 @@ const firebaseConfig = {
                 dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
             };
 
-            const sendMessage = async () => {
+                        const sendMessage = async () => {
                 const message = dom.messageInput.value.trim();
                 if (!message || !activeChatId) return;
 
                 const currentChat = chats[activeChatId];
                 if (!currentChat) return;
-                
+
+                abortController = new AbortController(); // Create a new controller for this request
+
                 appendMessage('user', message);
                 currentChat.messages.push({ role: 'user', content: message });
 
@@ -763,14 +772,23 @@ const firebaseConfig = {
                 dom.messageInput.style.height = 'auto';
                 dom.messageInput.focus();
 
-                appendMessage('assistant', ''); 
-                const allBotMessages = dom.chatHistory.querySelectorAll('.prose > span[id^="bot-msg-"]');
-                const latestBotMessageSpan = allBotMessages[allBotMessages.length - 1];
-                if (!latestBotMessageSpan) return;
+                dom.sendBtn.classList.add('hidden');
+                dom.stopBtn.classList.remove('hidden');
 
+                appendMessage('assistant', '');
+                const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
+                const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
+                
+                if (!latestBotMessageSpan) {
+                    dom.sendBtn.classList.remove('hidden');
+                    dom.stopBtn.classList.add('hidden');
+                    abortController = null;
+                    return;
+                }
+                
                 const messagesToSend = [
                     { role: 'system', content: currentChat.systemPrompt },
-                    ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10) 
+                    ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10)
                 ];
 
                 const currentUser = auth.currentUser;
@@ -785,7 +803,8 @@ const firebaseConfig = {
                     const response = await fetch('/api/chat', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend })
+                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }),
+                        signal: abortController.signal // This is the crucial part for stopping
                     });
 
                     if (!response.body) throw new Error("Response body is missing.");
@@ -868,8 +887,20 @@ const firebaseConfig = {
                     }
 
                 } catch (error) {
-                    console.error("sendMessage stream error:", error);
-                    latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
+                    if (error.name === 'AbortError') {
+                        console.log("Chat generation stopped by user.");
+                        const finalContent = latestBotMessageSpan.textContent.replace("▋", "");
+                        latestBotMessageSpan.innerHTML = marked.parse(finalContent);
+                         currentChat.messages.push({ role: 'assistant', content: finalContent });
+                    } else {
+                        console.error("sendMessage stream error:", error);
+                        latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
+                    }
+                } finally {
+                    // Always reset the UI
+                    dom.sendBtn.classList.remove('hidden');
+                    dom.stopBtn.classList.add('hidden');
+                    abortController = null;
                 }
             };
 
@@ -966,6 +997,11 @@ const firebaseConfig = {
                 dom.newChatBtn.addEventListener('click', createNewChat);
                 dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
                 dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
+                dom.stopBtn.addEventListener('click', () => {
+                    if (abortController) {
+                        abortController.abort();
+                    }
+                });
                 dom.sendBtn.addEventListener('click', sendMessage);
                 dom.voiceBtn.addEventListener('click', startVoiceRecognition);
                 dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
@@ -1101,13 +1137,17 @@ const firebaseConfig = {
                     const chatsLoaded = await loadUserChatsFromFirestore(user.uid);
 
                     if (chatsLoaded) {
-                        // Find the most recent chat to load
-                        const lastChatId = Math.max(...Object.keys(chats).map(Number));
-                        switchChat(String(lastChatId));
+                        const chatIds = Object.keys(chats);
+                        if (chatIds.length > 0) {
+                            // If chats exist, find the most recent one and switch to it.
+                            const lastChatId = Math.max(...chatIds.map(Number));
+                            switchChat(String(lastChatId));
+                        } else {
+                            // If the user has an account but zero chats, create one.
+                            createNewChat();
+                        }
                     } else {
-                       
-                        console.log("Next step: Implement createNewChat for Firestore.");
-                        createNewChat(); // This function will be updated next
+                        createNewChat();
                     }
 
                 } else {
