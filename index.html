@@ -68,7 +68,7 @@
 
 <body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100 font-sans">
 
-<div id="vanta-bg" class="fixed top-0 left-0 w-full h-screen -z-10"></div>
+<div id="vanta-bg" class="fixed inset-0 -z-10"></div>
 
 <section id="auth-section" class="relative z-10 flex items-center justify-center w-full min-h-screen p-4">
         <div class="w-full max-w-md mx-auto">
@@ -220,8 +220,9 @@
             </div>
 
             <!-- Right side: Controls -->
-            <div class="flex items-center space-x-1">
-                <div class="relative inline-block">
+
+            <div class="flex flex-shrink-0 items-center space-x-1">
+                    <div class="relative inline-block">
                     <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-gray-100 dark:bg-gray-700/80 px-3 py-1.5 rounded-md text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
                        <span id="modelSelectorLabel">Select Model</span>
                        <svg class="w-4 h-4 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
