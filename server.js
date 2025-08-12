@@ -78,33 +78,47 @@ app.post('/api/chat', checkAuth, async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
+    const isGoogle = model.startsWith('google/');
+
     try {
-        let response;
-
-        let isGoogle = model.startsWith('google/');
-
         if (isGoogle) {
-                       const apiKey = process.env.GEMINI_API_KEY;
+            // --- NON-STREAMING LOGIC FOR GOOGLE GEMINI ---
+            console.log("Using non-streaming handler for Google model.");
+            const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) throw new Error('GEMINI_API_KEY not configured.');
 
             const googleModelName = model.split('/')[1];
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModelName}:streamGenerateContent?key=${apiKey}`;
-
-            // The transformer function will now build the *entire* correct body
+            // IMPORTANT: Use the non-streaming endpoint
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModelName}:generateContent?key=${apiKey}`;
             const requestBody = transformMessagesForGoogle(messages);
 
-            response = await fetch(apiUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
 
-        } else { // For OpenRouter and other providers
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData}`);
+            }
+
+            const fullData = await response.json();
+            console.log("Received full response from Google:", JSON.stringify(fullData, null, 2));
+
+            // Extract the full text and send it as a single data event
+            const fullText = fullData.candidates?.[0]?.content?.parts?.[0]?.text || "";
+            const sseData = { choices: [{ delta: { content: fullText } }] };
+            res.write(`data: ${JSON.stringify(sseData)}\n\n`);
+
+        } else {
+            // --- STREAMING LOGIC FOR OPENROUTER ---
+            console.log("Using streaming handler for OpenRouter model.");
             const apiKey = process.env.OPENROUTER_API_KEY;
             if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured.');
 
             const apiUrl = "https://openrouter.ai/api/v1/chat/completions";
-            response = await fetch(apiUrl, {
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${apiKey}`,
@@ -112,86 +126,28 @@ app.post('/api/chat', checkAuth, async (req, res) => {
                 },
                 body: JSON.stringify({ model, messages, stream: true })
             });
-        }
 
-        if (!response.ok) {
-            const errorData = await response.text();
-            throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData}`);
-        }
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData}`);
+            }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let googleBuffer = ''; // Buffer for Google responses
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-                        const chunk = decoder.decode(value);
-
-           if (isGoogle) {
-                // Robust Google chunk handling - works for single or multi-chunk responses
-                console.log("Raw Google chunk:", chunk);
-                googleBuffer += chunk;
-                
-                // Try parsing the buffer continuously
-                let parseAttempts = 0;
-                while (parseAttempts < 3) { // Prevent infinite loops
-                    try {
-                        const parsed = JSON.parse(googleBuffer.trim());
-                        console.log("Google parsed response:", parsed);
-                        
-                        // Extract text from Google response (handle both array and single object)
-                        let candidates = Array.isArray(parsed) ? parsed[0]?.candidates : parsed?.candidates;
-                        
-                        if (candidates && candidates[0]?.content?.parts?.[0]?.text) {
-                            const text = candidates[0].content.parts[0].text;
-                            console.log("Extracted text:", text);
-                            
-                            // Send as SSE format
-                            const sseData = { candidates: [{ content: { parts: [{ text }] } }] };
-                            res.write(`data: ${JSON.stringify(sseData)}\n\n`);
-                        }
-                        
-                        // Successfully parsed, clear buffer and break
-                        googleBuffer = '';
-                        break;
-                        
-                    } catch (e) {
-                        // If buffer doesn't end with ] or }, wait for more chunks
-                        const trimmed = googleBuffer.trim();
-                        if (!trimmed.endsWith(']') && !trimmed.endsWith('}')) {
-                            break; // Wait for more data
-                        }
-                        
-                        // If it looks complete but still fails, try removing incomplete parts
-                        if (parseAttempts === 0 && trimmed.includes('}{')) {
-                            // Handle multiple JSON objects - take the first complete one
-                            const firstComplete = trimmed.split('}{')[0] + '}';
-                            try {
-                                const parsed = JSON.parse(firstComplete);
-                                googleBuffer = googleBuffer.substring(firstComplete.length);
-                                continue;
-                            } catch {}
-                        }
-                        
-                        parseAttempts++;
-                        if (parseAttempts >= 3) {
-                            console.warn("Could not parse Google response after 3 attempts:", e);
-                            googleBuffer = ''; // Reset to prevent infinite issues
-                        }
-                        break;
-                    }
-                }
-            } else {
-                // OpenRouter stream is already clean, just forward it
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                const chunk = decoder.decode(value);
                 res.write(chunk);
             }
-}
+        }
     } catch (error) {
         console.error('Server stream error:', error);
         res.write(`event: error\ndata: ${JSON.stringify({ message: error.message })}\n\n`);
     } finally {
+        // Always send a [DONE] message for the frontend to correctly finish.
+        res.write('data: [DONE]\n\n');
         res.end();
     }
 });

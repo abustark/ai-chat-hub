@@ -37,6 +37,14 @@
         .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
         .modal-transition { transition: opacity 0.2s ease, transform 0.2s ease; }
 
+                @keyframes blink { 50% { opacity: 0; } }
+        .blinking-cursor { display: inline-block; width: 2px; height: 1em; background-color: currentColor; margin-left: 2px; animation: blink 1s step-end infinite; vertical-align: bottom; }
+
+                .chat-bubble .prose p { margin: 0; } /* Removes unwanted space from AI response paragraphs */
+
+            @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fade-in-polite { animation: fadeIn 0.5s ease-out; }
+
     </style>
 
         <script>
@@ -738,7 +746,7 @@ const firebaseConfig = {
                 }
             };
 
-            const appendMessage = (sender, text, isHistory = false) => {
+                const appendMessage = (sender, text, isHistory = false, options = {}) => {
                 const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; 
                 const isUser = role === 'user';
                 const currentChat = chats[activeChatId]; 
@@ -764,13 +772,20 @@ const firebaseConfig = {
 
                 let messageContent;
                 if (isUser) {
-                    messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 } else {
-                    const uniqueId = `bot-msg-${Date.now()}`;
-                let botContent = isHistory
-                    ? marked.parse(text)
-                    : '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-                messageContent = `<span id="${uniqueId}">${botContent}</span>`;
+                const uniqueId = `bot-msg-${Date.now()}`;
+                    if (isHistory) {
+                        messageContent = `<span id="${uniqueId}">${marked.parse(text)}</span>`;
+                    } else {
+                        // For a new AI message, show the indicator.
+                        let indicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+                        // If it's a Google model, add the low-opacity waiting message.
+                        if (options.isGoogle) {
+                        indicatorHtml += `<p class="fade-in-polite text-xs text-gray-500 dark:text-gray-400 mt-2 italic">Please wait, fetching the full response from Gemini...</p>`;
+                        }
+                        messageContent = `<span id="${uniqueId}">${indicatorHtml}</span>`;
+                    }
                 }
 
                 messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>${isUser ? avatarHtml : ''}</div>`;
@@ -821,7 +836,8 @@ const firebaseConfig = {
                 dom.sendBtn.classList.add('hidden');
                 dom.stopBtn.classList.remove('hidden');
 
-                appendMessage('assistant', '');
+                const isGoogleModel = currentChat.model.startsWith('google/');
+                appendMessage('assistant', '', false, { isGoogle: isGoogleModel });
                 const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
                 const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
                 
@@ -859,6 +875,7 @@ const firebaseConfig = {
                     const decoder = new TextDecoder();
                     let fullReply = "";
                     let buffer = "";
+                    let isFirstChunk = true;
 
                     while (true) {
                         const { done, value } = await reader.read();
@@ -888,12 +905,26 @@ const firebaseConfig = {
                             
                             if (chunk.startsWith('data: ')) {
                                 const jsonStr = chunk.substring(6).trim();
-                                if (jsonStr === '[DONE]') continue;
+                            if (jsonStr === '[DONE]') continue;
                                 try {
                                     const parsed = JSON.parse(jsonStr);
                                     const textChunk = (parsed.candidates?.[0]?.content?.parts?.[0]?.text) || (parsed.choices?.[0]?.delta?.content) || '';
-                                    fullReply += textChunk;
-                                    latestBotMessageSpan.innerHTML = marked.parse(fullReply + "▋");
+                                    
+                                    if(textChunk) {
+                                        fullReply += textChunk;
+
+                                        if (isFirstChunk) {
+                                            // First chunk of text: replace the 3-dots with the text and cursor.
+                                            latestBotMessageSpan.innerHTML = `<span class="content-span">${marked.parse(fullReply)}</span><span class="blinking-cursor"></span>`;
+                                            isFirstChunk = false;
+                                        } else {
+                                            // Subsequent chunks: just update the text.
+                                            const contentHolder = latestBotMessageSpan.querySelector('.content-span');
+                                            if (contentHolder) {
+                                                contentHolder.innerHTML = marked.parse(fullReply);
+                                            }
+                                        }
+                                    }
                                 } catch (e) { 
                                     console.warn("Could not parse JSON chunk:", jsonStr);
                                 }
@@ -902,7 +933,10 @@ const firebaseConfig = {
                         dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
                     }
 
-                    latestBotMessageSpan.innerHTML = marked.parse(fullReply);
+                const contentHolder = latestBotMessageSpan.querySelector('.content-span');
+                    const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
+                    if(contentHolder) contentHolder.innerHTML = marked.parse(fullReply);
+                    if(cursor) cursor.remove();
                     
                     latestBotMessageSpan.closest('.prose').querySelectorAll('pre code').forEach(block => {
                         const pre = block.parentElement;
@@ -932,18 +966,31 @@ const firebaseConfig = {
                         console.error("Error saving chat update to Firestore:", dbError);
                     }
 
-                } catch (error) {
+                                } catch (error) {
                     if (error.name === 'AbortError') {
+                        // User stopped the generation.
                         console.log("Chat generation stopped by user.");
-                        const finalContent = latestBotMessageSpan.textContent.replace("▋", "");
-                        latestBotMessageSpan.innerHTML = marked.parse(finalContent);
-                         currentChat.messages.push({ role: 'assistant', content: finalContent });
+                        const contentSpan = latestBotMessageSpan.querySelector('.content-span');
+                        const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
+
+                        // Get the text that was already rendered.
+                        const finalContent = contentSpan ? contentSpan.textContent : "";
+                        
+                        // Remove the cursor if it exists.
+                        if (cursor) cursor.remove();
+
+                        // Save the partial response to the chat history if it's not empty.
+                        if (finalContent) {
+                            currentChat.messages.push({ role: 'assistant', content: finalContent });
+                        }
+                        
                     } else {
+                        // A different, unexpected error occurred.
                         console.error("sendMessage stream error:", error);
                         latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
                     }
                 } finally {
-                    // Always reset the UI
+                    // Always reset the UI regardless of success, user stop, or error.
                     dom.sendBtn.classList.remove('hidden');
                     dom.stopBtn.classList.add('hidden');
                     abortController = null;
