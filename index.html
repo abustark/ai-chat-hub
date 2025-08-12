@@ -3,7 +3,10 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABot | Multi-Model Assistant</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
     <link href="./dist/output.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
@@ -50,16 +53,22 @@
 
 </head>
 
+    <!-- Vanta.js and Three.js for animated background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
 
-<body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100">
 
-<section id="auth-section" class="flex items-center justify-center w-full min-h-screen p-4">
+<body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100 font-sans">
+
+<div id="vanta-bg" class="fixed top-0 left-0 w-full h-full -z-10"></div>
+
+<section id="auth-section" class="relative z-10 flex items-center justify-center w-full min-h-screen p-4">
         <div class="w-full max-w-md mx-auto">
             <div class="flex flex-col items-center justify-center mb-8">
                 <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
                 </div>
-                <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100">Welcome to ABot</h1>
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 font-heading">Welcome to ABot</h1>
                 <p class="text-gray-500 dark:text-gray-400 mt-2">Sign in to continue your journey</p>
             </div>
 
@@ -174,7 +183,7 @@
                 </button>
                 <div class="flex items-center">
                     <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg></div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent">ABot</h1>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent font-heading">ABot</h1>
                 </div>
             </div>
             <div class="flex items-center space-x-2 p-1 rounded-full bg-gray-200 dark:bg-gray-700/50">
@@ -420,6 +429,7 @@ const firebaseConfig = {
             let activeChatId = null;
             let abortController = null; 
             let isAppInitialized = false;
+            let vantaEffect = null;
             let recognition; // For voice recognition
 
             // =================================================================================
@@ -1196,14 +1206,20 @@ console.log('[Click Event] Switched to DARK mode.');
 
 
             // --- CENTRAL AUTH STATE CONTROLLER ---
-                        auth.onAuthStateChanged(async (user) => {
+                       
+                                    auth.onAuthStateChanged(async (user) => {
                 if (user) {
+                    // --- USER IS LOGGED IN ---
+                    if (vantaEffect) {
+                        vantaEffect.destroy();
+                        vantaEffect = null;
+                    }
+
                     dom.appContainer.style.display = 'flex';
                     dom.authSection.style.display = 'none';
                     
-                    initApp(); // Initialize app elements
+                    initApp();
 
-                    // Update user display info
                     if (user.isAnonymous) {
                         dom.userEmailDisplay.textContent = 'Guest User';
                         dom.userAvatar.src = `https://i.pravatar.cc/40?u=guest`;
@@ -1212,25 +1228,15 @@ console.log('[Click Event] Switched to DARK mode.');
                         dom.userAvatar.src = user.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`;
                     }
                     
-                    // Load chats from Firestore
-
-                        dom.chatList.innerHTML = `
-                        <div class="p-2 space-y-2">
-                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse"></div>
-                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-5/6"></div>
-                            <div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-4/6"></div>
-                        </div>
-                    `;
+                    dom.chatList.innerHTML = `<div class="p-2 space-y-2"><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-5/6"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-4/6"></div></div>`;
                     const chatsLoaded = await loadUserChatsFromFirestore(user.uid);
 
                     if (chatsLoaded) {
                         const chatIds = Object.keys(chats);
                         if (chatIds.length > 0) {
-                            // If chats exist, find the most recent one and switch to it.
                             const lastChatId = Math.max(...chatIds.map(Number));
                             switchChat(String(lastChatId));
                         } else {
-                            // If the user has an account but zero chats, create one.
                             createNewChat();
                         }
                     } else {
@@ -1238,11 +1244,28 @@ console.log('[Click Event] Switched to DARK mode.');
                     }
 
                 } else {
-                    // User is signed out
+                    // --- USER IS LOGGED OUT ---
+                    if (window.VANTA && !vantaEffect) {
+                        vantaEffect = VANTA.NET({
+                            el: "#vanta-bg",
+                            mouseControls: true,
+                            touchControls: true,
+                            gyroControls: false,
+                            minHeight: 200.00,
+                            minWidth: 200.00,
+                            scale: 1.00,
+                            scaleMobile: 1.00,
+                            color: 0x8b5cf6,          // brand's purple color
+                            backgroundColor: 0x0f172a, // dark slate background
+                            points: 12.00,
+                            maxDistance: 18.00
+                        });
+                    }
+                    
                     dom.appContainer.style.display = 'none';
                     dom.authSection.style.display = 'flex';
-                    isAppInitialized = false; // Reset app state on logout
-                    chats = {}; // Clear local chat data
+                    isAppInitialized = false; 
+                    chats = {}; 
                     activeChatId = null;
                     showLoginView();
                 }
