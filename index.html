@@ -45,6 +45,9 @@
             @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .fade-in-polite { animation: fadeIn 0.5s ease-out; }
 
+        .message-container:hover .copy-message-btn { opacity: 1; }
+.copy-message-btn { opacity: 0; transition: opacity 0.2s ease-out; }
+
     </style>
 
         <script>
@@ -205,7 +208,7 @@
             </div>
         </header>
         
-        <main class="flex-1 flex flex-col overflow-hidden min-h-0">
+    <main class="relative flex-1 flex flex-col overflow-hidden min-h-0">
                            <div id="chatHeader" class="px-6 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between min-h-[61px]">
             <!-- Left side: Title and Rename -->
             <div class="flex flex-shrink items-center gap-x-2 min-w-0">
@@ -225,27 +228,29 @@
 
             <div class="flex flex-shrink-0 items-center space-x-1">
                     <div class="relative inline-block">
-                    <button id="modelSelectorBtn" class="flex items-center justify-between w-auto bg-gray-100 dark:bg-gray-700/80 px-3 py-1.5 rounded-md text-xs text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
-                       <span id="modelSelectorLabel">Select Model</span>
-                       <svg class="w-4 h-4 ml-2 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                    </button>
-                    <div id="modelSelectorPanel" class="modal-transition absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-right" style="transform: scale(0.95); opacity: 0;"></div>
-                </div>
+   <button id="modelSelectorBtn" class="flex items-center space-x-2 w-auto bg-gray-100 dark:bg-gray-700/80 pl-4 pr-3 py-2 rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 dark:focus:ring-gray-600 dark:focus:ring-offset-gray-800">
+   <span id="modelSelectorDot" class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
+   <span id="modelSelectorLabel" class="font-medium">Select Model</span>
+   <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.72 9.53a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
+</button>
+<div id="modelSelectorPanel" class="modal-transition absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-right p-1" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
+</div>
                 <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                     <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                 </button>
             </div>
         </div>
             
-            <div id="chatHistoryContainer" class="flex-1 overflow-y-auto p-3 md:p-6 scrollbar-custom">
-            <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
+            <div id="chatHistoryContainer" class="relative flex-1 overflow-y-auto p-3 md:p-6 scrollbar-custom">
+           <div id="chatHistory" class="max-w-3xl mx-auto space-y-6"></div>
+
             </div>
 
-            <div class="bg-white/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 py-1.5 px-2 md:py-3 md:px-4 backdrop-blur-sm">
-            <div class="max-w-3xl mx-auto">
+                        <div class="bg-white/50 dark:bg-gray-800/50 border-t border-gray-200 dark:border-gray-700 py-1.5 px-2 md:py-3 md:px-4 backdrop-blur-sm">
+                <div class="max-w-3xl mx-auto">
                     <div class="flex items-end bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-1">
                         <textarea id="messageInput" class="flex-1 bg-transparent px-3 py-2 resize-none focus:outline-none text-gray-900 dark:text-gray-200" placeholder="Message AI assistant..." rows="1"></textarea>
-                                                <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                        <button id="voiceBtn" class="p-2 text-gray-500 hover:text-indigo-600 dark:hover:text-indigo-400">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z" clip-rule="evenodd" /></svg>
                         </button>
                         <div class="relative flex items-center">
@@ -265,6 +270,8 @@
                     This site is under active development. Check back occasionally for new features.
                 </p>
             </footer>
+
+           
         </main>
     </div>
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 hidden md:hidden"></div>
@@ -285,6 +292,34 @@
     <!-- NEW Hidden file input for importing -->
     <input type="file" id="importFileInput" class="hidden" accept="application/json">
 
+        <!-- Guest User Limit Modal -->
+    <div id="guestLimitModal" class="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-60 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div id="guestLimitOverlay" class="absolute inset-0"></div>
+        <div id="guestLimitPanel" class="modal-transition relative z-10 w-full max-w-md p-6 mx-4 bg-white dark:bg-slate-800 rounded-lg shadow-xl" style="opacity: 0; transform: scale(0.95);">
+            <div class="text-center">
+                <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900/50">
+                    <svg class="h-6 w-6 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" /></svg>
+                </div>
+                <h3 class="mt-4 text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">Save Your Conversation</h3>
+                <div class="mt-2">
+           <p class="text-sm text-gray-600 dark:text-gray-300">
+You've reached the message limit for guest users. <strong class="text-gray-700 dark:text-gray-100">Sign up to save</strong> your chat history and continue the conversation.
+</p>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-6 space-y-3">
+                             <button type="button" id="guestGoogleLinkBtn" class="w-full flex items-center justify-center py-3 px-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800">
+                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.219,0-9.559-3.397-11.28-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                    <span>Sign Up with Google to Continue</span>
+                </button>
+                <button type="button" id="guestLimitCancelBtn" class="w-full mt-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white dark:bg-slate-700 dark:text-gray-200 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm hover:bg-gray-50 dark:hover:bg-slate-600 focus:outline-none">
+                    Maybe Later
+                </button>
+            </div>
+        </div>
+    </div>
+
+
      <!-- NEW Code to Add -->
     <!-- Delete Confirmation Modal -->
     <div id="deleteModal" class="fixed inset-0 z-30 flex items-center justify-center bg-black bg-opacity-60 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
@@ -292,8 +327,8 @@
         <div id="deletePanel" class="modal-transition relative z-10 w-full max-w-md p-6 mx-4 bg-white dark:bg-slate-800 rounded-lg shadow-xl" style="opacity: 0; transform: scale(0.95);">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white" id="modal-title">Confirm Deletion</h3>
             <div class="mt-2">
-                <p class="text-sm text-gray-600 dark:text-gray-300">
-                    Are you sure you want to delete the chat: "<strong id="chatNameToDelete" class="font-medium"></strong>"? This action cannot be undone.
+            <p id="deleteModalBody" class="text-sm text-gray-600 dark:text-gray-300">
+                    <!-- Text will be set by JavaScript -->
                 </p>
             </div>
             <div class="mt-5 sm:mt-6 flex justify-end space-x-3">
@@ -425,20 +460,30 @@ const firebaseConfig = {
                 deleteModal: document.getElementById('deleteModal'),
                 deleteOverlay: document.getElementById('deleteOverlay'),
                 deletePanel: document.getElementById('deletePanel'),
+                deleteModalBody: document.getElementById('deleteModalBody'),
                 chatNameToDelete: document.getElementById('chatNameToDelete'),
                 deleteCancelBtn: document.getElementById('deleteCancelBtn'),
                 deleteConfirmBtn: document.getElementById('deleteConfirmBtn'),
+                guestLimitModal: document.getElementById('guestLimitModal'),
+                guestLimitOverlay: document.getElementById('guestLimitOverlay'),
+                guestLimitPanel: document.getElementById('guestLimitPanel'),
+                guestGoogleLinkBtn: document.getElementById('guestGoogleLinkBtn'),
+                guestLimitCancelBtn: document.getElementById('guestLimitCancelBtn'),
                 toastNotification: document.getElementById('toast-notification'),
                 toastIcon: document.getElementById('toast-icon'),
-                toastMessage: document.getElementById('toast-message')
+                toastMessage: document.getElementById('toast-message'),
+                scrollToBottomBtn: document.getElementById('scrollToBottomBtn')
             };
 
             // =================================================================================
             // STATE MANAGEMENT
             // =================================================================================
+
+            const GUEST_MESSAGE_LIMIT = 5;
             let chats = {};
             let activeChatId = null;
             let abortController = null; 
+            let guestSessionMessageCount = 0;
             let isAppInitialized = false;
             let vantaEffect = null;
             let recognition; // For voice recognition
@@ -466,6 +511,31 @@ const firebaseConfig = {
                 dom.forgotPasswordView.style.display = 'block';
                 dom.errorMessage.textContent = '';
             };
+
+                        const handleAuthError = (error) => {
+                console.error("Authentication Error:", error.code);
+                let message = "An unexpected error occurred. Please try again.";
+                switch (error.code) {
+                    case 'auth/invalid-credential':
+                    case 'auth/invalid-login-credentials':
+                    case 'auth/wrong-password':
+                    case 'auth/user-not-found':
+                        message = "Invalid email or password. Please check your credentials and try again.";
+                        break;
+                    case 'auth/email-already-in-use':
+                        message = "An account with this email address already exists.";
+                        break;
+                    case 'auth/weak-password':
+                        message = "Your password is too weak. It must be at least 6 characters long.";
+                        break;
+                    case 'auth/popup-closed-by-user':
+                        message = "The sign-in window was closed. Please try again.";
+                        break;
+                }
+                dom.errorMessage.textContent = message;
+            };
+
+
 
             const signInWithGoogle = () => {
                 dom.errorMessage.textContent = '';
@@ -517,6 +587,44 @@ const firebaseConfig = {
             // =================================================================================
             // CORE CHAT APPLICATION FUNCTIONS
             // =================================================================================
+
+
+            const closeGuestLimitModal = () => {
+                dom.guestLimitPanel.style.opacity = '0';
+                dom.guestLimitPanel.style.transform = 'scale(0.95)';
+                setTimeout(() => dom.guestLimitModal.classList.add('hidden'), 200);
+            };
+
+            const showGuestLimitModal = () => {
+                dom.guestLimitModal.classList.remove('hidden');
+                setTimeout(() => { 
+                    dom.guestLimitPanel.style.opacity = '1'; 
+                    dom.guestLimitPanel.style.transform = 'scale(1)'; 
+                }, 10);
+            };
+
+            const linkGuestToGoogle = () => {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                const currentUser = auth.currentUser;
+                if (!currentUser || !currentUser.isAnonymous) return;
+
+                currentUser.linkWithPopup(provider)
+                    .then((result) => {
+                        console.log("Anonymous account successfully linked!", result.user);
+                        closeGuestLimitModal();
+                        showToast("Account created! Your chat is saved.");
+                        // The onAuthStateChanged listener will automatically refresh the user's info.
+                    }).catch((error) => {
+                        // This error occurs if the user's Google account is already in use.
+                        if (error.code === 'auth/credential-already-in-use') {
+                            showToast("This Google account is already linked to another user.", "error");
+                        } else {
+                           handleAuthError(error); // Use our existing error handler
+                        }
+                    });
+            };
+
+
             const getTimestamp = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                         const loadUserChatsFromFirestore = async (userId) => {
                 const chatsCollectionRef = db.collection('users').doc(userId).collection('chats');
@@ -545,22 +653,31 @@ const firebaseConfig = {
             
                         const applyModelColorTheme = (colorName) => {
                 const colorClasses = generateColorClasses(colorName);
-                const elementsToColor = [dom.newChatBtn, dom.sendBtn];
-                const oldColors = Object.values(COLOR_MAP).flatMap(c => [`bg-${c}`, `hover:bg-${c}/90`]);
+const elementsToColor = [dom.newChatBtn, dom.sendBtn];
+const oldBgColors = Object.values(COLOR_MAP).map(c => `bg-${c}`);
+const oldHoverBgColors = Object.values(COLOR_MAP).map(c => `hover:bg-${c}/90`);
 
-                elementsToColor.forEach(el => {
-                    if (!el) return;
-                    el.classList.remove(...oldColors);
-                    el.classList.add(colorClasses.bg, colorClasses.hoverBg);
-                });
+// Update New Chat and Send buttons
+elementsToColor.forEach(el => {
+    if (!el) return;
+    el.classList.remove(...oldBgColors, ...oldHoverBgColors);
+    el.classList.add(colorClasses.bg, colorClasses.hoverBg);
+});
 
-                const pill = dom.modelIndicatorPill;
-                if (pill) {
-                    const oldTextColors = Object.values(COLOR_MAP).map(c => `text-${c}`);
-                    const oldBorderColors = Object.values(COLOR_MAP).map(c => `border-${c}`);
-                    pill.classList.remove(...oldTextColors, ...oldBorderColors);
-                    pill.classList.add(colorClasses.text, colorClasses.border);
-                }
+// Update the new model selector dot
+if(dom.modelSelectorDot) {
+    dom.modelSelectorDot.classList.remove(...oldBgColors);
+    dom.modelSelectorDot.classList.add(colorClasses.bg);
+}
+
+// Update the old pill (can be removed later if not used)
+const pill = dom.modelIndicatorPill;
+if (pill) {
+    const oldTextColors = Object.values(COLOR_MAP).map(c => `text-${c}`);
+    const oldBorderColors = Object.values(COLOR_MAP).map(c => `border-${c}`);
+    pill.classList.remove(...oldTextColors, ...oldBorderColors);
+    pill.classList.add(colorClasses.text, colorClasses.border);
+}
             };
             
             const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
@@ -653,17 +770,27 @@ const firebaseConfig = {
                 reader.readAsText(file);
             };
 
-                        const deleteChat = (chatId) => {
+                      const deleteChat = (chatId) => {
                 const chat = chats[chatId];
                 if (!chat) return;
 
-                // Populate and show the modal
-                dom.chatNameToDelete.textContent = `"${chat.name}"`;
-                dom.deleteConfirmBtn.dataset.chatId = chatId; // Store the ID on the button
+                // 1. Configure Modal Text
+                dom.deleteModal.querySelector('#modal-title').textContent = "Confirm Deletion";
+                dom.deleteModalBody.innerHTML = `Are you sure you want to delete the chat: "<strong class="font-medium text-gray-800 dark:text-gray-100">${chat.name}</strong>"? This action cannot be undone.`;
+
+                // 2. Configure Button
+                const confirmBtn = dom.deleteConfirmBtn;
+                confirmBtn.textContent = "Delete";
+                confirmBtn.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+                confirmBtn.classList.add('bg-red-600', 'hover:bg-red-700');
+                confirmBtn.dataset.chatId = chatId;
+
+                                // 3. Show Modal
                 dom.deleteModal.classList.remove('hidden');
                 setTimeout(() => { 
                     dom.deletePanel.style.opacity = '1'; 
-                    dom.deletePanel.style.transform = 'scale(1)'; 
+                    dom.deletePanel.style.transform = 'scale(1)';
+                    dom.deleteConfirmBtn.focus(); // Set focus
                 }, 10);
             };
 
@@ -773,25 +900,46 @@ const firebaseConfig = {
                 const messageEl = document.createElement('div'); 
                 if (!isHistory) messageEl.className = 'message-enter';
 
-                let messageContent;
+                                 let messageContent;
                 if (isUser) {
-                messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 } else {
-                const uniqueId = `bot-msg-${Date.now()}`;
+                    const uniqueId = `bot-msg-${Date.now()}`;
                     if (isHistory) {
                         messageContent = `<span id="${uniqueId}">${marked.parse(text)}</span>`;
                     } else {
-                        // For a new AI message, show the indicator.
                         let indicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-                        // If it's a Google model, add the low-opacity waiting message.
                         if (options.isGoogle) {
-                        indicatorHtml += `<p class="fade-in-polite text-xs text-gray-500 dark:text-gray-400 mt-2 italic">Please wait, fetching the full response from Gemini...</p>`;
+                            indicatorHtml += `<p class="fade-in-polite text-xs text-gray-500 dark:text-gray-400 mt-2 italic">Please wait, fetching the full response from Gemini...</p>`;
                         }
                         messageContent = `<span id="${uniqueId}">${indicatorHtml}</span>`;
                     }
                 }
 
-                messageEl.innerHTML = `<style>.prose pre { position: relative; } .copy-code-btn { position: absolute; top: 0.5rem; right: 0.5rem; background-color: #4a5568; color: white; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; opacity: 0; transition: opacity 0.2s; } .prose pre:hover .copy-code-btn { opacity: 1; }</style><div class="flex items-start ${justifyClass}">${isUser ? '' : avatarHtml}<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>${isUser ? avatarHtml : ''}</div>`;
+                const copyButtonHtml = `<button class="copy-message-btn p-1.5 rounded-md text-gray-400 self-center"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg></button>`;
+
+                const bubbleHtml = `<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>`;
+
+                let finalLayout = '';
+                if (isUser) {
+                    finalLayout = `${copyButtonHtml} ${bubbleHtml} ${avatarHtml}`;
+                } else {
+                    finalLayout = `${avatarHtml} ${bubbleHtml} ${copyButtonHtml}`;
+                }
+
+                messageEl.innerHTML = `<style>.prose pre{position:relative;}.copy-code-btn{position:absolute;top:.5rem;right:.5rem;background-color:#4a5568;color:white;padding:.25rem .5rem;border-radius:.25rem;font-size:.75rem;opacity:0;transition:opacity .2s}.prose pre:hover .copy-code-btn{opacity:1}</style><div class="message-container flex items-end gap-x-2 ${justifyClass}">${finalLayout}</div>`;
+                
+                const copyBtn = messageEl.querySelector('.copy-message-btn');
+                if (copyBtn) {
+                    copyBtn.addEventListener('click', () => {
+                        navigator.clipboard.writeText(text).then(() => {
+                            showToast("Copied to clipboard!");
+                        }).catch(err => {
+                            showToast("Failed to copy.", "error");
+                            console.error('Failed to copy text: ', err);
+                        });
+                    });
+                }
                 
                 dom.chatHistory.appendChild(messageEl);
 
@@ -816,6 +964,17 @@ const firebaseConfig = {
             };
 
                         const sendMessage = async () => {
+
+
+                // Check for guest user message limit
+                const activeUser = auth.currentUser; // Renamed to avoid conflict
+                if (activeUser && activeUser.isAnonymous) {
+                    if (guestSessionMessageCount >= GUEST_MESSAGE_LIMIT) {
+                        showGuestLimitModal();
+                        return;
+                    }
+                }
+
                 const message = dom.messageInput.value.trim();
                 if (!message || !activeChatId) return;
 
@@ -826,6 +985,9 @@ const firebaseConfig = {
 
                 appendMessage('user', message);
                 currentChat.messages.push({ role: 'user', content: message });
+                if (auth.currentUser && auth.currentUser.isAnonymous) {
+                    guestSessionMessageCount++;
+                }
 
                 if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
                     currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
@@ -1063,38 +1225,78 @@ console.log('[Click Event] Switched to DARK mode.');
             });
                 
                 // --- Model Selector Listeners ---
-                Object.keys(MODEL_CONFIG).forEach(key => {
-                    const model = MODEL_CONFIG[key]; 
-                    const optionEl = document.createElement('a'); 
-                    optionEl.href = '#';
-                    optionEl.className = 'block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700';
-                    optionEl.textContent = model.name; 
-                    optionEl.dataset.modelKey = key;
-                    
-                    optionEl.addEventListener('click', async (e) => { 
-                        e.preventDefault(); 
-                        e.stopPropagation(); 
-                        const currentUser = auth.currentUser;
-                        if (chats[activeChatId] && currentUser) { 
-                            chats[activeChatId].model = key;
-                            const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
-                            await chatDocRef.update({ model: key }).catch(err => console.error("Failed to update model in DB", err));
-                            dom.modelSelectorLabel.textContent = model.name; 
-                            dom.modelIndicatorPill.textContent = model.name; 
-                            applyModelColorTheme(model.color); 
-                        } 
-                        dom.modelSelectorPanel.style.opacity = '0'; 
-                        dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
-                        setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); 
-                    });
-                    dom.modelSelectorPanel.appendChild(optionEl);
-                });
-                dom.modelSelectorBtn.addEventListener('click', e => { 
-                    e.stopPropagation(); 
-                    const isHidden = dom.modelSelectorPanel.classList.toggle('hidden'); 
-                    dom.modelSelectorPanel.style.opacity = isHidden ? '0' : '1'; 
-                    dom.modelSelectorPanel.style.transform = isHidden ? 'scale(0.95)' : 'scale(1)'; 
-                });
+
+const renderModelSelectorOptions = () => {
+    dom.modelSelectorPanel.innerHTML = ''; // Clear previous options
+    const currentChatModel = activeChatId ? chats[activeChatId].model : null;
+
+    Object.keys(MODEL_CONFIG).forEach(key => {
+        const model = MODEL_CONFIG[key];
+        const provider = key.split('/')[0]; // e.g., "google"
+        const isActive = key === currentChatModel;
+        const colorClasses = generateColorClasses(model.color);
+
+        const optionEl = document.createElement('button');
+        optionEl.className = `w-full flex items-center justify-between text-left py-2 px-2 rounded-md text-sm ${isActive ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}`;
+        optionEl.dataset.modelKey = key;
+
+        let checkmarkSvg = '';
+        if (isActive) {
+            checkmarkSvg = `<svg class="w-4 h-4 ${colorClasses.text}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.052-.143z" clip-rule="evenodd" /></svg>`;
+        }
+
+        optionEl.innerHTML = `
+            <div class="flex items-center space-x-3">
+                <span class="w-2.5 h-2.5 rounded-full ${colorClasses.bg}"></span>
+                <div>
+                    <span class="font-medium text-gray-800 dark:text-gray-100">${model.name}</span>
+                    <span class="block text-xs text-gray-500 dark:text-gray-400 capitalize">${provider}</span>
+                </div>
+            </div>
+            ${checkmarkSvg}
+        `;
+
+        optionEl.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const currentUser = auth.currentUser;
+            if (chats[activeChatId] && currentUser) {
+                chats[activeChatId].model = key;
+                const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+                await chatDocRef.update({ model: key }).catch(err => console.error("Failed to update model in DB", err));
+                
+                // Re-render the chat to update all UI elements
+                renderActiveChat();
+                
+                // Close the panel
+                dom.modelSelectorPanel.style.opacity = '0';
+                dom.modelSelectorPanel.style.transform = 'scale(0.95)';
+                setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200);
+            }
+        });
+        dom.modelSelectorPanel.appendChild(optionEl);
+    });
+};
+
+
+dom.modelSelectorBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const isHidden = dom.modelSelectorPanel.classList.contains('hidden');
+    if (isHidden) {
+        renderModelSelectorOptions(); // Re-render options every time it's opened
+        dom.modelSelectorPanel.classList.remove('hidden');
+        setTimeout(() => {
+            dom.modelSelectorPanel.style.opacity = '1';
+            dom.modelSelectorPanel.style.transform = 'translateY(0) scale(1)';
+        }, 10); // A short delay ensures the transition plays
+    } else {
+        dom.modelSelectorPanel.style.opacity = '0';
+        dom.modelSelectorPanel.style.transform = 'translateY(-10px) scale(0.98)';
+        setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); // Wait for animation to finish
+    }
+});
+
+                
                 document.addEventListener('click', () => { 
                     dom.modelSelectorPanel.style.opacity = '0'; 
                     dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
@@ -1115,6 +1317,8 @@ console.log('[Click Event] Switched to DARK mode.');
                 dom.voiceBtn.addEventListener('click', startVoiceRecognition);
                 dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
                 dom.sidebarOverlay.addEventListener('click', closeSidebar);
+
+
                 dom.searchChats.addEventListener('input', (e) => renderChatList(e.target.value));
 
                             // --- Inline Chat Title Rename Listeners ---
@@ -1172,6 +1376,37 @@ console.log('[Click Event] Switched to DARK mode.');
                     dom.deletePanel.style.transform = 'scale(0.95)';
                     setTimeout(() => dom.deleteModal.classList.add('hidden'), 200);
                 };
+
+                        const handleSignOutRequest = () => {
+                    // 1. Configure Modal Text
+                    dom.deleteModal.querySelector('#modal-title').textContent = "Confirm Sign Out";
+                    dom.deleteModalBody.textContent = "Are you sure you want to sign out? This will end your current session.";
+
+                    // 2. Configure Button
+                    const confirmBtn = dom.deleteConfirmBtn;
+                    confirmBtn.textContent = "Sign Out";
+                    confirmBtn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    confirmBtn.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+
+                    // 3. Set Action
+                    const newBtn = confirmBtn.cloneNode(true);
+                    confirmBtn.parentNode.replaceChild(newBtn, confirmBtn);
+                    dom.deleteConfirmBtn = newBtn;
+                    newBtn.addEventListener('click', () => {
+                        signOutUser();
+                        closeDeleteModal();
+                    }, { once: true });
+                    
+                                       // 4. Show Modal
+                    dom.deleteModal.classList.remove('hidden');
+                    setTimeout(() => { 
+                        dom.deletePanel.style.opacity = '1'; 
+                        dom.deletePanel.style.transform = 'scale(1)';
+                        dom.deleteConfirmBtn.focus(); // Set focus
+                    }, 10);
+                };
+
+
                 const handleDeleteConfirm = async (e) => {
                     const chatId = e.target.dataset.chatId;
                     const currentUser = auth.currentUser;
@@ -1203,8 +1438,14 @@ console.log('[Click Event] Switched to DARK mode.');
                 dom.deleteOverlay.addEventListener('click', closeDeleteModal);
                 dom.deleteConfirmBtn.addEventListener('click', handleDeleteConfirm);
 
+                // --- Guest Limit Modal Listeners ---
+                dom.guestLimitOverlay.addEventListener('click', closeGuestLimitModal);
+                dom.guestLimitCancelBtn.addEventListener('click', closeGuestLimitModal);
+                dom.guestGoogleLinkBtn.addEventListener('click', linkGuestToGoogle);
+
                 // --- Final Listeners ---
-                dom.signoutBtn.addEventListener('click', signOutUser);
+                 dom.signoutBtn.addEventListener('click', handleSignOutRequest);
+
                 isAppInitialized = true;
             }
             
@@ -1224,10 +1465,7 @@ console.log('[Click Event] Switched to DARK mode.');
                         dom.errorMessage.style.color = '#22c55e'; // green
                         dom.errorMessage.textContent = 'Success! Check your email for a reset link.';
                     })
-                    .catch((error) => {
-                        dom.errorMessage.style.color = ''; // default red
-                        dom.errorMessage.textContent = error.message;
-                    });
+                    .catch(handleAuthError);
             });
             
             dom.signupForm.addEventListener('submit', (e) => {
@@ -1236,10 +1474,7 @@ console.log('[Click Event] Switched to DARK mode.');
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
                 auth.createUserWithEmailAndPassword(email, password)
-                    .catch((error) => {
-                        console.error('Sign up error:', error);
-                        dom.errorMessage.textContent = error.message;
-                    });
+                .catch(handleAuthError);
             });
             
             dom.loginForm.addEventListener('submit', (e) => {
@@ -1248,10 +1483,7 @@ console.log('[Click Event] Switched to DARK mode.');
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
                 auth.signInWithEmailAndPassword(email, password)
-                    .catch((error) => {
-                        console.error('Login error:', error);
-                        dom.errorMessage.textContent = error.message;
-                    });
+                .catch(handleAuthError);
             });
 
 
@@ -1273,9 +1505,11 @@ console.log('[Click Event] Switched to DARK mode.');
                     if (user.isAnonymous) {
                         dom.userEmailDisplay.textContent = 'Guest User';
                         dom.userAvatar.src = `https://i.pravatar.cc/40?u=guest`;
+                        dom.importChatBtn.style.display = 'none'; // Hide for guests
                     } else {
                         dom.userEmailDisplay.textContent = user.displayName || user.email;
                         dom.userAvatar.src = user.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`;
+                        dom.importChatBtn.style.display = 'flex'; // Show for signed-in users
                     }
                     
                     dom.chatList.innerHTML = `<div class="p-2 space-y-2"><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-5/6"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-4/6"></div></div>`;
