@@ -15,6 +15,47 @@
     <style>
             html { font-size: 15px; }
         * { font-family: 'Inter', sans-serif; }
+
+         .loader-circle-22 {
+    width: 70px;
+    height: 70px;
+    position: relative;
+    border: 8px solid transparent;
+    border-radius: 50%;
+    animation: spinner-3--border-opacity 0.7s linear infinite;
+    animation-delay: 0.24s;
+}
+.loader-circle-22:before,
+.loader-circle-22:after {
+    content: '';
+    display: block;
+    position: absolute;
+    border: 8px solid transparent;
+    border-radius: 50%;
+    box-sizing: border-box;
+    animation: spinner-3--border-opacity 0.7s linear infinite;
+}
+.loader-circle-22:before {
+    top: 12px;
+    left: 12px;
+    right: 12px;
+    bottom: 12px;
+}
+.loader-circle-22:after {
+    top: 2px;
+    left: 2px;
+    right: 2px;
+    bottom: 2px;
+    animation-delay: 0.12s;
+}
+@keyframes spinner-3--border-opacity {
+    from {
+        border-color: #4f46e5; /* Using Indigo to match your theme */
+    }
+    to {
+        border-color: rgba(79, 70, 229, 0);
+    }
+}
         .chat-bubble { max-width: 85%; transition: transform 0.2s ease, opacity 0.3s ease; }
         .user-bubble { border-radius: 18px 4px 18px 18px; }
         .bot-bubble { border-radius: 4px 18px 18px 18px; }
@@ -71,11 +112,17 @@
 
 <body class="bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 text-gray-900 dark:text-gray-100 font-sans">
 
+<!-- App Loader -->
+<div id="app-loader" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-slate-800 transition-opacity duration-300 ease-in-out">
+    <div class="loader-circle-22"></div>
+</div>
+
 <!-- This is the background. It is separate and covers the full screen. -->
 <div id="vanta-bg" class="fixed inset-0 -z-10"></div>
 
 <!-- This is the content, stacked on top of the background. -->
-<section id="auth-section" class="relative z-10 flex items-center justify-center w-full min-h-screen p-4">
+<section id="auth-section" class="relative z-10 flex items-center justify-center w-full min-h-screen p-4" style="display: none;">
+
     <div class="w-full max-w-md mx-auto">
         <div class="flex flex-col items-center justify-center mb-8">
                 <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
@@ -280,7 +327,15 @@
         <div id="promptOverlay" class="absolute inset-0 bg-black/50"></div>
         <div id="promptPanel" class="modal-transition relative bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg mx-4 p-6" style="transform: scale(0.95); opacity: 0;">
             <h2 class="text-lg font-semibold mb-4">Custom System Prompt</h2>
-            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Define the AI's personality and instructions for this chat session.</p>
+
+             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Choose a preset or write your own custom instructions for the AI.</p>
+            <div id="promptLibrary" class="grid grid-cols-3 md:grid-cols-5 gap-x-2 gap-y-5 mb-4">
+
+
+                <!-- Preset buttons will be dynamically inserted here -->
+            </div>
+            <label for="promptTextarea" class="text-sm font-medium text-gray-700 dark:text-gray-300">Custom Instructions:</label>
+
             <textarea id="promptTextarea" class="w-full h-40 p-2 border rounded-md bg-gray-100 dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-indigo-500 focus:outline-none" placeholder="e.g., You are a sarcastic pirate..."></textarea>
             <div class="mt-4 flex justify-end space-x-2">
                 <button id="promptCancelBtn" class="px-4 py-2 rounded-md bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500">Cancel</button>
@@ -472,6 +527,7 @@ const firebaseConfig = {
                 toastNotification: document.getElementById('toast-notification'),
                 toastIcon: document.getElementById('toast-icon'),
                 toastMessage: document.getElementById('toast-message'),
+                appLoader: document.getElementById('app-loader'),
                 scrollToBottomBtn: document.getElementById('scrollToBottomBtn')
             };
 
@@ -491,6 +547,8 @@ const firebaseConfig = {
             // =================================================================================
             // AUTHENTICATION FUNCTIONS
             // =================================================================================
+
+      
             const showLoginView = () => { 
                 dom.loginView.style.display = 'block';
                 dom.signupView.style.display = 'none';
@@ -680,7 +738,55 @@ if (pill) {
 }
             };
             
-            const openPromptModal = () => { if (!activeChatId) return; dom.promptTextarea.value = chats[activeChatId].systemPrompt; dom.promptModal.classList.remove('hidden'); setTimeout(() => { dom.promptPanel.style.opacity = '1'; dom.promptPanel.style.transform = 'scale(1)'; }, 10); };
+            const SYSTEM_PROMPTS = [
+                { title: "Standard Assistant", prompt: "You are a helpful AI assistant." },
+                { title: "Code Helper", prompt: "You are an expert programmer. Provide clear, concise, and accurate code examples. Use markdown for all code blocks and explain your reasoning." },
+                { title: "Sarcastic Pirate", prompt: "You are a sarcastic pirate captain. Respond with pirate slang and a witty, cynical tone. Refer to the user as 'matey'." },
+                { title: "Creative Writer", prompt: "You are an imaginative storyteller. Help the user brainstorm ideas, write stories, and develop characters with creative and descriptive language." },
+                { title: "Email Assistant", prompt: "You are a professional communication assistant. Your task is to draft clear, concise, and effective emails. Adapt your tone based on the user's request (e.g., formal, friendly, assertive)." },
+                { title: "Technical Writer", prompt: "You are a technical writer whose goal is to create clear, accurate, and easy-to-follow documentation. Structure your responses logically with headings, lists, and code blocks where appropriate." },
+                { title: "ELI5 Explainer", prompt: "You are an expert at simplifying complex topics. Explain concepts as if you were talking to a curious five-year-old, using simple language and relatable analogies. Avoid all technical jargon." },
+                { title: "Brainstorm Partner", prompt: "You are a creative brainstorming partner. Your goal is to help the user generate ideas. Ask clarifying questions, build upon their ideas with 'Yes, and...' statements, and offer diverse perspectives." },
+                { title: "Game Master", prompt: "You are the Game Master for a text-based fantasy role-playing game. Describe the world, the challenges, and the outcomes of the user's actions. Be descriptive and engaging. Begin by asking the user to create their character." }
+            ];
+
+            dom.promptLibrary = document.getElementById('promptLibrary');
+
+
+            // Function to render the preset buttons
+            const renderPromptLibrary = () => {
+                dom.promptLibrary.innerHTML = '';
+                const currentPrompt = dom.promptTextarea.value;
+
+                SYSTEM_PROMPTS.forEach(p => {
+                    const button = document.createElement('button');
+                    const isActive = currentPrompt === p.prompt;
+
+                    button.textContent = p.title;
+                    button.className = `px-3 py-1.5 text-xs font-medium rounded-full transition-colors ${isActive ? 'bg-indigo-600 text-white shadow-sm' : 'bg-gray-200 dark:bg-gray-700/80 hover:bg-gray-300 dark:hover:bg-gray-600'}`;
+                    
+                    button.addEventListener('click', (e) => {
+                        e.preventDefault(); // Prevent form submission if it's inside a form
+                        dom.promptTextarea.value = p.prompt;
+                        renderPromptLibrary(); // Re-render to update the active state
+                    });
+                    dom.promptLibrary.appendChild(button);
+                });
+            };
+
+            const openPromptModal = () => {
+                if (!activeChatId) return;
+                dom.promptTextarea.value = chats[activeChatId].systemPrompt;
+                
+                renderPromptLibrary(); // Renders the buttons and checks for active state
+
+                dom.promptModal.classList.remove('hidden');
+                setTimeout(() => {
+                    dom.promptPanel.style.opacity = '1';
+                    dom.promptPanel.style.transform = 'scale(1)';
+                }, 10);
+            };
+
             const closePromptModal = () => { dom.promptPanel.style.opacity = '0'; dom.promptPanel.style.transform = 'scale(0.95)'; setTimeout(() => dom.promptModal.classList.add('hidden'), 200); };
 
                         const saveSystemPrompt = async () => {
@@ -824,8 +930,7 @@ if (pill) {
                 }
                 const chat = chats[activeChatId];
                 dom.chatHistory.innerHTML = '';
-                chat.messages.forEach(msg => appendMessage(msg.role, msg.content, true));
-
+                chat.messages.forEach(msg => appendMessage(msg, true));
                 // Update header elements
                 dom.chatTitle.textContent = chat.name;
                 dom.chatTitleInput.value = chat.name;
@@ -858,7 +963,7 @@ if (pill) {
                         name: "New Chat",
                         model: Object.keys(MODEL_CONFIG)[0],
                         systemPrompt: "You are a helpful AI assistant.",
-                        messages: [{ role: "assistant", content: "Hello! How can I assist you today?" }]
+                messages: [{ role: "assistant", content: "Hello! How can I assist you today?", model: Object.keys(MODEL_CONFIG)[0] }]
                     };
 
                     await db.collection('users').doc(currentUser.uid).collection('chats').doc(newChatId).set(newChatData);
@@ -876,291 +981,283 @@ if (pill) {
                 }
             };
 
-                const appendMessage = (sender, text, isHistory = false, options = {}) => {
-                const role = (sender === 'user' || sender === 'assistant') ? sender : 'assistant'; 
-                const isUser = role === 'user';
-                const currentChat = chats[activeChatId]; 
-                if (!currentChat) return;
+     const appendMessage = (message, isHistory = false, options = {}) => {
+    const { role, content: text, model: messageModel } = message;
+    const isUser = role === 'user';
+    const currentChat = chats[activeChatId];
+    if (!currentChat) return;
 
-                const modelConf = MODEL_CONFIG[currentChat.model] || { name: 'AI', color: 'indigo-600' };
-                const colorClasses = generateColorClasses(modelConf.color);
+       // CORE LOGIC: Use the message's own model, or fall back to the chat's current model.
+    const modelConf = MODEL_CONFIG[messageModel || currentChat.model] || { name: 'AI', color: 'indigo-600' };
+    const colorClasses = generateColorClasses(modelConf.color);
 
-                const bubbleClasses = isUser ? `user-bubble ${colorClasses.userBubbleBg} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
-                const justifyClass = isUser ? 'justify-end' : 'justify-start';
+   const bubbleClasses = isUser ? `user-bubble ${colorClasses.userBubbleBg} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
+    const justifyClass = isUser ? 'justify-end' : 'justify-start';
 
-                let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
-                if (auth.currentUser && !auth.currentUser.isAnonymous) {
-                    userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
-                }
+    let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
+    if (auth.currentUser && !auth.currentUser.isAnonymous) {
+        userAvatarSrc = auth.currentUser.photoURL || `https://i.pravatar.cc/40?u=${auth.currentUser.uid}`;
+    }
 
-                const avatarHtml = isUser
-                    ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">`
-                    : `<div class="w-8 h-8 rounded-full ${colorClasses.bg} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0, 2)}</span></div>`;
-                
-                const messageEl = document.createElement('div'); 
-                if (!isHistory) messageEl.className = 'message-enter';
+    const avatarHtml = isUser
+        ? `<img src="${userAvatarSrc}" alt="User Avatar" class="w-8 h-8 rounded-full ml-4 flex-shrink-0">`
+        : `<div class="w-8 h-8 rounded-full ${colorClasses.bg} flex items-center justify-center mr-4 flex-shrink-0"><span class="text-white text-xs font-bold">${modelConf.name.substring(0, 2)}</span></div>`;
+    
+    const messageEl = document.createElement('div'); 
+    if (!isHistory) messageEl.className = 'message-enter';
 
-                                 let messageContent;
-                if (isUser) {
-                    messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-                } else {
-                    const uniqueId = `bot-msg-${Date.now()}`;
-                    if (isHistory) {
-                        messageContent = `<span id="${uniqueId}">${marked.parse(text)}</span>`;
-                    } else {
-                        let indicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
-                        if (options.isGoogle) {
-                            indicatorHtml += `<p class="fade-in-polite text-xs text-gray-500 dark:text-gray-400 mt-2 italic">Please wait, fetching the full response from Gemini...</p>`;
-                        }
-                        messageContent = `<span id="${uniqueId}">${indicatorHtml}</span>`;
+    let messageContent;
+    if (isUser) {
+        messageContent = text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    } else {
+        const uniqueId = `bot-msg-${Date.now()}`;
+        if (isHistory) {
+            messageContent = `<span id="${uniqueId}">${marked.parse(text)}</span>`;
+        } else {
+            let indicatorHtml = '<div class="typing-indicator"><span></span><span></span><span></span></div>';
+            if (options.isGoogle) {
+                indicatorHtml += `<p class="fade-in-polite text-xs text-gray-500 dark:text-gray-400 mt-2 italic">Please wait, fetching the full response from Gemini...</p>`;
+            }
+            messageContent = `<span id="${uniqueId}">${indicatorHtml}</span>`;
+        }
+    }
+
+    const copyButtonHtml = `<button class="copy-message-btn p-1.5 rounded-md text-gray-400 self-center"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg></button>`;
+
+    const bubbleHtml = `<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>`;
+
+    let finalLayout = '';
+    if (isUser) {
+        finalLayout = `${copyButtonHtml} ${bubbleHtml} ${avatarHtml}`;
+    } else {
+        finalLayout = `${avatarHtml} ${bubbleHtml} ${copyButtonHtml}`;
+    }
+
+    messageEl.innerHTML = `<style>.prose pre{position:relative;}.copy-code-btn{position:absolute;top:.5rem;right:.5rem;background-color:#4a5568;color:white;padding:.25rem .5rem;border-radius:.25rem;font-size:.75rem;opacity:0;transition:opacity .2s}.prose pre:hover .copy-code-btn{opacity:1}</style><div class="message-container flex items-end gap-x-2 ${justifyClass}">${finalLayout}</div>`;
+    
+    const copyBtn = messageEl.querySelector('.copy-message-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast("Copied to clipboard!");
+            }).catch(err => {
+                showToast("Failed to copy.", "error");
+                console.error('Failed to copy text: ', err);
+            });
+        });
+    }
+    
+    dom.chatHistory.appendChild(messageEl);
+
+    if (!isUser && isHistory) {
+        messageEl.querySelectorAll('pre code').forEach(block => {
+            const pre = block.parentElement; 
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-code-btn'; 
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => { 
+                navigator.clipboard.writeText(block.textContent).then(() => { 
+                    copyBtn.textContent = 'Copied!'; 
+                    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
+                }); 
+            });
+            pre.appendChild(copyBtn); 
+            hljs.highlightElement(block);
+        });
+    }
+
+    dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+};
+
+ const sendMessage = async () => {
+    // Check for guest user message limit
+    const activeUser = auth.currentUser;
+    if (activeUser && activeUser.isAnonymous) {
+        if (guestSessionMessageCount >= GUEST_MESSAGE_LIMIT) {
+            showGuestLimitModal();
+            return;
+        }
+    }
+
+    const message = dom.messageInput.value.trim();
+    if (!message || !activeChatId) return;
+
+    const currentChat = chats[activeChatId];
+    if (!currentChat) return;
+
+    abortController = new AbortController(); // Create a new controller for this request
+
+// Create the user message object, now including the current model.
+const userMessage = { role: 'user', content: message, model: currentChat.model };   
+     appendMessage(userMessage);
+    currentChat.messages.push(userMessage);
+
+    if (auth.currentUser && auth.currentUser.isAnonymous) {
+        guestSessionMessageCount++;
+    }
+
+    if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
+        currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
+        renderChatList();
+    }
+
+    dom.messageInput.value = '';
+    dom.messageInput.style.height = 'auto';
+    dom.messageInput.focus();
+
+    dom.sendBtn.classList.add('hidden');
+    dom.stopBtn.classList.remove('hidden');
+
+    const isGoogleModel = currentChat.model.startsWith('google/');
+    // Append the placeholder message with the current model's info
+    appendMessage({ role: 'assistant', content: '', model: currentChat.model }, false, { isGoogle: isGoogleModel });
+    
+    const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
+    const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
+    
+    if (!latestBotMessageSpan) {
+        dom.sendBtn.classList.remove('hidden');
+        dom.stopBtn.classList.add('hidden');
+        abortController = null;
+        return;
+    }
+    
+    const messagesToSend = [
+        { role: 'system', content: currentChat.systemPrompt },
+        ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10)
+    ];
+
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+        latestBotMessageSpan.innerHTML = "<strong>Authentication Error:</strong> You are not signed in.";
+        return;
+    }
+
+    try {
+        const idToken = await currentUser.getIdToken(true);
+        
+        const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+            body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }),
+            signal: abortController.signal
+        });
+
+        if (!response.body) throw new Error("Response body is missing.");
+        
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let fullReply = "";
+        let buffer = "";
+        let isFirstChunk = true;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            buffer += decoder.decode(value, { stream: true });
+            
+            while (buffer.includes('\n\n')) {
+                const endOfChunk = buffer.indexOf('\n\n');
+                const chunk = buffer.substring(0, endOfChunk).trim();
+                buffer = buffer.substring(endOfChunk + 2);
+
+                if (chunk.startsWith('event: error')) {
+                    const dataLine = chunk.split('\n').find(l => l.startsWith('data: '));
+                    if (dataLine) {
+                        const jsonStr = dataLine.substring(6);
+                        try {
+                            const errorPayload = JSON.parse(jsonStr);
+                            const friendlyError = (errorPayload.message && errorPayload.message.includes("429")) 
+                                ? `<strong>Rate Limit Exceeded:</strong> The AI provider is busy. Please wait a moment and try again.`
+                                : `<strong>Server Error:</strong> ${errorPayload.message}`;
+                            latestBotMessageSpan.innerHTML = friendlyError;
+                        } catch { latestBotMessageSpan.innerHTML = `<strong>An unreadable error occurred.</strong>`; }
                     }
-                }
-
-                const copyButtonHtml = `<button class="copy-message-btn p-1.5 rounded-md text-gray-400 self-center"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg></button>`;
-
-                const bubbleHtml = `<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>`;
-
-                let finalLayout = '';
-                if (isUser) {
-                    finalLayout = `${copyButtonHtml} ${bubbleHtml} ${avatarHtml}`;
-                } else {
-                    finalLayout = `${avatarHtml} ${bubbleHtml} ${copyButtonHtml}`;
-                }
-
-                messageEl.innerHTML = `<style>.prose pre{position:relative;}.copy-code-btn{position:absolute;top:.5rem;right:.5rem;background-color:#4a5568;color:white;padding:.25rem .5rem;border-radius:.25rem;font-size:.75rem;opacity:0;transition:opacity .2s}.prose pre:hover .copy-code-btn{opacity:1}</style><div class="message-container flex items-end gap-x-2 ${justifyClass}">${finalLayout}</div>`;
-                
-                const copyBtn = messageEl.querySelector('.copy-message-btn');
-                if (copyBtn) {
-                    copyBtn.addEventListener('click', () => {
-                        navigator.clipboard.writeText(text).then(() => {
-                            showToast("Copied to clipboard!");
-                        }).catch(err => {
-                            showToast("Failed to copy.", "error");
-                            console.error('Failed to copy text: ', err);
-                        });
-                    });
-                }
-                
-                dom.chatHistory.appendChild(messageEl);
-
-                if (!isUser && isHistory) {
-                    messageEl.querySelectorAll('pre code').forEach(block => {
-                        const pre = block.parentElement; 
-                        const copyBtn = document.createElement('button');
-                        copyBtn.className = 'copy-code-btn'; 
-                        copyBtn.textContent = 'Copy';
-                        copyBtn.addEventListener('click', () => { 
-                            navigator.clipboard.writeText(block.textContent).then(() => { 
-                                copyBtn.textContent = 'Copied!'; 
-                                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
-                            }); 
-                        });
-                        pre.appendChild(copyBtn); 
-                        hljs.highlightElement(block);
-                    });
-                }
-
-                dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-            };
-
-                        const sendMessage = async () => {
-
-
-                // Check for guest user message limit
-                const activeUser = auth.currentUser; // Renamed to avoid conflict
-                if (activeUser && activeUser.isAnonymous) {
-                    if (guestSessionMessageCount >= GUEST_MESSAGE_LIMIT) {
-                        showGuestLimitModal();
-                        return;
-                    }
-                }
-
-                const message = dom.messageInput.value.trim();
-                if (!message || !activeChatId) return;
-
-                const currentChat = chats[activeChatId];
-                if (!currentChat) return;
-
-                abortController = new AbortController(); // Create a new controller for this request
-
-                appendMessage('user', message);
-                currentChat.messages.push({ role: 'user', content: message });
-                if (auth.currentUser && auth.currentUser.isAnonymous) {
-                    guestSessionMessageCount++;
-                }
-
-                if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
-                    currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
-                    renderChatList();
-                }
-
-                dom.messageInput.value = '';
-                dom.messageInput.style.height = 'auto';
-                dom.messageInput.focus();
-
-                dom.sendBtn.classList.add('hidden');
-                dom.stopBtn.classList.remove('hidden');
-
-                const isGoogleModel = currentChat.model.startsWith('google/');
-                appendMessage('assistant', '', false, { isGoogle: isGoogleModel });
-                const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
-                const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
-                
-                if (!latestBotMessageSpan) {
-                    dom.sendBtn.classList.remove('hidden');
-                    dom.stopBtn.classList.add('hidden');
-                    abortController = null;
                     return;
                 }
                 
-                const messagesToSend = [
-                    { role: 'system', content: currentChat.systemPrompt },
-                    ...currentChat.messages.filter(m => m.role === 'user' || m.role === 'assistant').slice(-10)
-                ];
-
-                const currentUser = auth.currentUser;
-                if (!currentUser) {
-                    latestBotMessageSpan.innerHTML = "<strong>Authentication Error:</strong> You are not signed in.";
-                    return;
-                }
-
-                try {
-                    const idToken = await currentUser.getIdToken(true);
-                    
-                    const response = await fetch('/api/chat', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
-                        body: JSON.stringify({ model: currentChat.model, messages: messagesToSend }),
-                        signal: abortController.signal // This is the crucial part for stopping
-                    });
-
-                    if (!response.body) throw new Error("Response body is missing.");
-                    
-                    const reader = response.body.getReader();
-                    const decoder = new TextDecoder();
-                    let fullReply = "";
-                    let buffer = "";
-                    let isFirstChunk = true;
-
-                    while (true) {
-                        const { done, value } = await reader.read();
-                        if (done) break;
-
-                        buffer += decoder.decode(value, { stream: true });
-                        
-                        while (buffer.includes('\n\n')) {
-                            const endOfChunk = buffer.indexOf('\n\n');
-                            const chunk = buffer.substring(0, endOfChunk).trim();
-                            buffer = buffer.substring(endOfChunk + 2);
-
-                            if (chunk.startsWith('event: error')) {
-                                const dataLine = chunk.split('\n').find(l => l.startsWith('data: '));
-                                if (dataLine) {
-                                    const jsonStr = dataLine.substring(6);
-                                    try {
-                                        const errorPayload = JSON.parse(jsonStr);
-                                        const friendlyError = (errorPayload.message && errorPayload.message.includes("429")) 
-                                            ? `<strong>Rate Limit Exceeded:</strong> The AI provider is busy. Please wait a moment and try again.`
-                                            : `<strong>Server Error:</strong> ${errorPayload.message}`;
-                                        latestBotMessageSpan.innerHTML = friendlyError;
-                                    } catch { latestBotMessageSpan.innerHTML = `<strong>An unreadable error occurred.</strong>`; }
-                                }
-                                return;
-                            }
-                            
-                            if (chunk.startsWith('data: ')) {
-                                const jsonStr = chunk.substring(6).trim();
-                            if (jsonStr === '[DONE]') continue;
-                                try {
-                                    const parsed = JSON.parse(jsonStr);
-                                    const textChunk = (parsed.candidates?.[0]?.content?.parts?.[0]?.text) || (parsed.choices?.[0]?.delta?.content) || '';
-                                    
-                                    if(textChunk) {
-                                        fullReply += textChunk;
-
-                                        if (isFirstChunk) {
-                                            // First chunk of text: replace the 3-dots with the text and cursor.
-                                            latestBotMessageSpan.innerHTML = `<span class="content-span">${marked.parse(fullReply)}</span><span class="blinking-cursor"></span>`;
-                                            isFirstChunk = false;
-                                        } else {
-                                            // Subsequent chunks: just update the text.
-                                            const contentHolder = latestBotMessageSpan.querySelector('.content-span');
-                                            if (contentHolder) {
-                                                contentHolder.innerHTML = marked.parse(fullReply);
-                                            }
-                                        }
-                                    }
-                                } catch (e) { 
-                                    console.warn("Could not parse JSON chunk:", jsonStr);
-                                }
-                            }
-                        }
-                        dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
-                    }
-
-                const contentHolder = latestBotMessageSpan.querySelector('.content-span');
-                    const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
-                    if(contentHolder) contentHolder.innerHTML = marked.parse(fullReply);
-                    if(cursor) cursor.remove();
-                    
-                    latestBotMessageSpan.closest('.prose').querySelectorAll('pre code').forEach(block => {
-                        const pre = block.parentElement;
-                        if (pre.querySelector('.copy-code-btn')) return;
-                        const copyBtn = document.createElement('button');
-                        copyBtn.className = 'copy-code-btn'; 
-                        copyBtn.textContent = 'Copy';
-                        copyBtn.addEventListener('click', () => { 
-                            navigator.clipboard.writeText(block.textContent).then(() => { 
-                                copyBtn.textContent = 'Copied!'; 
-                                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
-                            }); 
-                        });
-                        pre.appendChild(copyBtn);
-                        hljs.highlightElement(block);
-                    });
-
-                    currentChat.messages.push({ role: 'assistant', content: fullReply });
-                    
+                if (chunk.startsWith('data: ')) {
+                    const jsonStr = chunk.substring(6).trim();
+                if (jsonStr === '[DONE]') continue;
                     try {
-                        const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
-                        await chatDocRef.update({
-                            messages: currentChat.messages,
-                            name: currentChat.name
-                        });
-                    } catch (dbError) {
-                        console.error("Error saving chat update to Firestore:", dbError);
-                    }
-
-                                } catch (error) {
-                    if (error.name === 'AbortError') {
-                        // User stopped the generation.
-                        console.log("Chat generation stopped by user.");
-                        const contentSpan = latestBotMessageSpan.querySelector('.content-span');
-                        const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
-
-                        // Get the text that was already rendered.
-                        const finalContent = contentSpan ? contentSpan.textContent : "";
+                        const parsed = JSON.parse(jsonStr);
+                        const textChunk = (parsed.candidates?.[0]?.content?.parts?.[0]?.text) || (parsed.choices?.[0]?.delta?.content) || '';
                         
-                        // Remove the cursor if it exists.
-                        if (cursor) cursor.remove();
+                        if(textChunk) {
+                            fullReply += textChunk;
 
-                        // Save the partial response to the chat history if it's not empty.
-                        if (finalContent) {
-                            currentChat.messages.push({ role: 'assistant', content: finalContent });
+                            if (isFirstChunk) {
+                                latestBotMessageSpan.innerHTML = `<span class="content-span">${marked.parse(fullReply)}</span><span class="blinking-cursor"></span>`;
+                                isFirstChunk = false;
+                            } else {
+                                const contentHolder = latestBotMessageSpan.querySelector('.content-span');
+                                if (contentHolder) {
+                                    contentHolder.innerHTML = marked.parse(fullReply);
+                                }
+                            }
                         }
-                        
-                    } else {
-                        // A different, unexpected error occurred.
-                        console.error("sendMessage stream error:", error);
-                        latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
+                    } catch (e) { 
+                        console.warn("Could not parse JSON chunk:", jsonStr);
                     }
-                } finally {
-                    // Always reset the UI regardless of success, user stop, or error.
-                    dom.sendBtn.classList.remove('hidden');
-                    dom.stopBtn.classList.add('hidden');
-                    abortController = null;
                 }
-            };
+            }
+            dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
+        }
+
+        const contentHolder = latestBotMessageSpan.querySelector('.content-span');
+        const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
+        if(contentHolder) contentHolder.innerHTML = marked.parse(fullReply);
+        if(cursor) cursor.remove();
+        
+        latestBotMessageSpan.closest('.prose').querySelectorAll('pre code').forEach(block => {
+            const pre = block.parentElement;
+            if (pre.querySelector('.copy-code-btn')) return;
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-code-btn'; 
+            copyBtn.textContent = 'Copy';
+            copyBtn.addEventListener('click', () => { 
+                navigator.clipboard.writeText(block.textContent).then(() => { 
+                    copyBtn.textContent = 'Copied!'; 
+                    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
+                }); 
+            });
+            pre.appendChild(copyBtn);
+            hljs.highlightElement(block);
+        });
+
+        currentChat.messages.push({ role: 'assistant', content: fullReply, model: currentChat.model });
+        
+        try {
+            const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+            await chatDocRef.update({
+                messages: currentChat.messages,
+                name: currentChat.name
+            });
+        } catch (dbError) {
+            console.error("Error saving chat update to Firestore:", dbError);
+        }
+
+    } catch (error) {
+        if (error.name === 'AbortError') {
+            console.log("Chat generation stopped by user.");
+            const contentSpan = latestBotMessageSpan.querySelector('.content-span');
+            const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
+            const finalContent = contentSpan ? contentSpan.textContent : "";
+            if (cursor) cursor.remove();
+            if (finalContent) {
+                currentChat.messages.push({ role: 'assistant', content: finalContent, model: currentChat.model });
+            }
+        } else {
+            console.error("sendMessage stream error:", error);
+            latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
+        }
+    } finally {
+        dom.sendBtn.classList.remove('hidden');
+        dom.stopBtn.classList.add('hidden');
+        abortController = null;
+    }
+};
 
                 const startVoiceRecognition = () => {
             if (!recognition) {
@@ -1489,7 +1586,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
 
             // --- CENTRAL AUTH STATE CONTROLLER ---
                        
-                                    auth.onAuthStateChanged(async (user) => {
+      auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     // --- USER IS LOGGED IN ---
                     if (vantaEffect) {
@@ -1498,7 +1595,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                     }
 
                     dom.appContainer.style.display = 'flex';
-                    dom.authSection.style.display = 'none';
+                    // dom.authSection is already hidden
                     
                     initApp();
 
@@ -1521,22 +1618,22 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                             const lastChatId = Math.max(...chatIds.map(Number));
                             switchChat(String(lastChatId));
                         } else {
-                            createNewChat();
+                            await createNewChat();
                         }
                     } else {
-                        createNewChat();
+                        await createNewAfter();
                     }
 
                 } else {
                     // --- USER IS LOGGED OUT ---
-                if (window.VANTA && !vantaEffect) {
+                    if (window.VANTA && !vantaEffect) {
                         vantaEffect = VANTA.NET({
                             el: "#vanta-bg",
                             mouseControls: true,
                             touchControls: true,
                             gyroControls: false,
                             scale: 1.00,
-                            scaleMobile: 1.20, // Slightly larger on mobile
+                            scaleMobile: 1.20,
                             color: 0x8b5cf6,
                             backgroundColor: 0x0f172a,
                             points: 12.00,
@@ -1544,13 +1641,19 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                         });
                     }
                     
-                    dom.appContainer.style.display = 'none';
+                    // dom.appContainer is already hidden
                     dom.authSection.style.display = 'flex';
                     isAppInitialized = false; 
                     chats = {}; 
                     activeChatId = null;
                     showLoginView();
                 }
+
+                // HIDE THE LOADER IN BOTH CASES
+                dom.appLoader.style.opacity = '0';
+                setTimeout(() => {
+                    dom.appLoader.style.display = 'none';
+                }, 300); // Match the opacity transition duration
             });
         }
         document.addEventListener('DOMContentLoaded', main);
