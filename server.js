@@ -74,17 +74,21 @@ app.post('/api/chat', checkAuth, async (req, res) => {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    const isGoogle = model.startsWith('google/');
+    // Create a "cleaned" version of the messages array for standard APIs
+    const cleanedMessages = messages.map(({ role, content }) => ({ role, content }));
 
-    try {
+    const isGoogle = model.startsWith('google/');
+    const isGroq = model.startsWith('groq/');
+    const isNvidia = model.startsWith('nvidia/');
+
+   try {
         if (isGoogle) {
-            
             const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) throw new Error('GEMINI_API_KEY not configured.');
 
             const googleModelName = model.split('/')[1];
-            // IMPORTANT: Use the non-streaming endpoint
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${googleModelName}:generateContent?key=${apiKey}`;
+            // Google's transformer function uses the original 'messages' array
             const requestBody = transformMessagesForGoogle(messages);
 
             const response = await fetch(apiUrl, {
@@ -99,14 +103,72 @@ app.post('/api/chat', checkAuth, async (req, res) => {
             }
 
             const fullData = await response.json();
-
-            // Extract the full text and send it as a single data event
             const fullText = fullData.candidates?.[0]?.content?.parts?.[0]?.text || "";
             const sseData = { choices: [{ delta: { content: fullText } }] };
             res.write(`data: ${JSON.stringify(sseData)}\n\n`);
 
-        } else {
-            
+        } else if (isGroq) {
+            const apiKey = process.env.GROQ_API_KEY;
+            if (!apiKey) throw new Error('GROQ_API_KEY not configured.');
+
+            const apiUrl = "https://api.groq.com/openai/v1/chat/completions";
+            const groqModelName = model.substring(model.indexOf('/') + 1);
+                        
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                // Use the cleaned messages array
+                body: JSON.stringify({ model: groqModelName, messages: cleanedMessages, stream: true })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                res.write(decoder.decode(value));
+            }
+                        
+        } else if (isNvidia) {
+            const apiKey = process.env.NVIDIA_API_KEY;
+            if (!apiKey) throw new Error('NVIDIA_API_KEY not configured.');
+
+            const apiUrl = "https://integrate.api.nvidia.com/v1/chat/completions";
+            const nvidiaModelName = model.substring(model.indexOf('/') + 1);
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json',
+                    'Accept': 'text/event-stream'
+                },
+                // Use the cleaned messages array
+                body: JSON.stringify({ model: nvidiaModelName, messages: cleanedMessages, stream: true })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.text();
+                throw new Error(`API Error: ${response.status} ${response.statusText} - ${errorData}`);
+            }
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+                res.write(decoder.decode(value));
+            }
+        
+        } else { // Default to OpenRouter
             const apiKey = process.env.OPENROUTER_API_KEY;
             if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured.');
 
@@ -117,7 +179,8 @@ app.post('/api/chat', checkAuth, async (req, res) => {
                     'Authorization': `Bearer ${apiKey}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ model, messages, stream: true })
+                // Use the cleaned messages array
+                body: JSON.stringify({ model, messages: cleanedMessages, stream: true })
             });
 
             if (!response.ok) {
@@ -127,12 +190,10 @@ app.post('/api/chat', checkAuth, async (req, res) => {
 
             const reader = response.body.getReader();
             const decoder = new TextDecoder();
-
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
-                const chunk = decoder.decode(value);
-                res.write(chunk);
+                res.write(decoder.decode(value));
             }
         }
     } catch (error) {

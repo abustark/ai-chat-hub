@@ -3,7 +3,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ABot | Multi-Model Assistant</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -157,9 +157,7 @@
 
     <div class="w-full max-w-md mx-auto">
         <div class="flex flex-col items-center justify-center mb-8">
-                <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-20 h-20 rounded-2xl flex items-center justify-center mb-5 shadow-lg">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg>
-                </div>
+                <img src="./logo.png" alt="ABot Logo" class="h-24 w-24 mb-5">
                 <h1 class="text-3xl font-bold font-heading" style="color: #f3f4f6;">Welcome to ABot</h1>
                 <p class="mt-2" style="color: #9ca3af;">Sign in to continue your journey</p>
             </div>
@@ -268,14 +266,14 @@
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col w-full">
-    <header class="bg-white dark:bg-gray-800 shadow-sm py-2 px-4 flex items-center justify-between z-10">
+    
+       <header class="relative bg-white dark:bg-gray-800 shadow-sm py-2 px-4 flex items-center justify-between z-10">
             <div class="flex items-center">
                 <button id="sidebarToggle" class="mr-3 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 md:hidden">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" /></svg>
                 </button>
                 <div class="flex items-center">
-                    <div class="bg-gradient-to-r from-purple-500 to-indigo-600 w-8 h-8 rounded-lg flex items-center justify-center mr-3"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" /></svg></div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent font-heading">ABot</h1>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-indigo-600 bg-clip-text text-transparent font-heading dark:text-white dark:bg-none ml-3">ABot</h1>
                 </div>
             </div>
             <div class="flex items-center space-x-2 p-1 rounded-full bg-gray-200 dark:bg-gray-700/50">
@@ -285,7 +283,10 @@
                     <svg id="moonIcon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-300 hidden" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
                 </button>
             </div>
-        </header>
+
+            <!-- The Model Panel is now a direct child of the header, allowing it to expand freely -->
+            <div id="modelSelectorPanel" class="modal-transition absolute top-full inset-x-0 mx-auto mt-2 w-full max-w-5xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border dark:border-gray-600 rounded-lg shadow-lg z-20 hidden origin-top p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
+    </header>
         
     <main class="relative flex-1 flex flex-col overflow-hidden min-h-0">
                            <div id="chatHeader" class="px-6 py-2 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between min-h-[61px]">
@@ -312,8 +313,8 @@
    <span id="modelSelectorLabel" class="font-medium">Select Model</span>
    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.72 9.53a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
 </button>
-<div id="modelSelectorPanel" class="modal-transition absolute top-full right-0 mt-2 w-64 bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-md shadow-lg z-20 hidden origin-top-right p-1" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
-</div>
+<div id="modelSelectorPanel" class="modal-transition absolute top-full right-0 mt-2 w-auto max-w-5xl bg-white dark:bg-gray-800 border dark:border-gray-600 rounded-lg shadow-lg z-20 hidden origin-top-right p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
+ </div>
                 <button id="promptBtn" class="p-2 rounded-md hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
                     <svg class="w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm3 2a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0V5a1 1 0 00-1-1zM7 8a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1zm4 0a1 1 0 00-1 1v1a1 1 0 002 0v-1a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
                 </button>
@@ -446,14 +447,28 @@ You've reached the message limit for guest users. <strong class="text-gray-700 d
         // This is the main entry point for our entire application.
         function main() {
 
-                    const COLOR_MAP = {
-            gemini: 'blue-500',
-            'gemini-pro': 'sky-500',
-            'deepseek-v3': 'green-500',
+                   const COLOR_MAP = {
+            // Google
+            gemini: 'sky-500', 
+            'gemini-pro': 'blue-500',
+            // DeepSeek
+            'deepseek-v3': 'blue-700',
             'deepseek-r1': 'teal-500',
-            'qwen-32b': 'orange-500',
-            'qwen-235b': 'amber-600',
-            'indigo-600': 'indigo-600' // Default
+            // Qwen (Alibaba Cloud)
+            'qwen-32b': 'purple-500',
+            'qwen-235b': 'violet-500',
+            // Llama (Meta)
+            'llama-blue': 'indigo-600',
+            // Mixtral (Mistral AI)
+            'mistral-orange': 'orange-500',
+            // Claude (Anthropic)
+            'claude-mauve': 'rose-800',
+            // Groq
+            'groq-yellow': 'amber-400',
+            // NVIDIA
+            'nvidia-green': 'emerald-500',           
+            // Default
+            'indigo-600': 'indigo-600'
         };
 
         const generateColorClasses = (colorName) => {
@@ -482,14 +497,33 @@ const firebaseConfig = {
 
     const db = firebase.firestore(); // Initialize the Firestore database
     
-            const MODEL_CONFIG = {
+    const MODEL_CONFIG = {
+                // --- NEW DEFAULT ---
+                'groq/openai/gpt-oss-120b': { name: 'GPT-oss 120b', color: 'groq-yellow' },
 
+                // --- GOOGLE (GEMINI) ---
                 'google/gemini-2.5-pro': { name: 'Gemini 2.5 Pro', color: 'gemini' },
                 'google/gemini-2.5-flash': { name: 'Gemini 2.5 Flash', color: 'gemini-pro' },
-                'deepseek/deepseek-chat-v3': { name: 'DeepSeek V3', color: 'deepseek-v3' },
-                'deepseek/deepseek-r1': { name: 'DeepSeek R1', color: 'deepseek-r1' },
-                'qwen/qwen3-235b-a22b': { name: 'Qwen3 235B', color: 'qwen-32b' },
-                'qwen/qwq-32b': { name: 'Qwen QwQ', color: 'qwen-235b' }
+
+                // --- OTHER GROQ ---
+                'groq/deepseek-r1-distill-llama-70b': { name: 'DeepSeek R1 70b', color: 'groq-yellow' },
+                'groq/llama-3.1-8b-instant': { name: 'Llama 3.1', color: 'groq-yellow' },
+                'groq/meta-llama/llama-4-maverick-17b-128e-instruct': { name: 'Llama 4 Maverick', color: 'groq-yellow' },
+                'groq/meta-llama/llama-4-scout-17b-16e-instruct': { name: 'Llama 4 Scout', color: 'groq-yellow' },
+                'groq/moonshotai/kimi-k2-instruct': { name: 'Kimi K2', color: 'groq-yellow' },
+
+                // --- NVIDIA ---
+                'nvidia/openai/gpt-oss-20b': { name: 'GPT-oss 20b', color: 'nvidia-green' },
+                'nvidia/nvidia/nvidia-nemotron-nano-9b-v2': { name: 'nvidia nim', color: 'nvidia-green' },
+                'nvidia/mistralai/mistral-nemotron': { name: 'Mistral', color: 'nvidia-green' },
+                'nvidia/deepseek-ai/deepseek-r1-0528': { name: 'DeepSeek R1', color: 'nvidia-green' },
+                'nvidia/qwen/qwen2.5-coder-32b-instruct': { name: 'qwen 2.5 CODER', color: 'nvidia-green' },
+
+                // --- OPENROUTER ---
+                'deepseek/deepseek-chat-v3-0324:free': { name: 'DeepSeek V3', color: 'deepseek-v3' },
+                'qwen/qwen3-coder:free': { name: 'qwen 3 CODER', color: 'qwen-32b' },
+                'z-ai/glm-4.5-air:free': { name: 'GLM 4.5(z.ai)', color: 'llama-blue' },
+                'cognitivecomputations/dolphin-mistral-24b-venice-edition:free': { name: 'venice ai', color: 'mistral-orange' },
             };
 
             
@@ -1455,18 +1489,78 @@ console.log('[Click Event] Switched to DARK mode.');
                 
                 // --- Model Selector Listeners ---
 
+const handleModelSelectorNavigation = (e) => {
+    if (dom.modelSelectorPanel.classList.contains('hidden')) return;
+
+    const buttons = Array.from(dom.modelSelectorPanel.querySelectorAll('button'));
+    if (buttons.length === 0) return;
+
+    const currentIndex = buttons.findIndex(btn => btn === document.activeElement);
+
+    if (e.key === 'Escape') {
+        e.preventDefault();
+        dom.modelSelectorPanel.style.opacity = '0';
+        dom.modelSelectorPanel.style.transform = 'scale(0.95)';
+        setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200);
+        dom.modelSelectorBtn.focus();
+        return;
+    }
+
+    if (e.key === 'Tab') {
+        const firstElement = buttons[0];
+        const lastElement = buttons[buttons.length - 1];
+        if (e.shiftKey && document.activeElement === firstElement) {
+            e.preventDefault();
+            lastElement.focus();
+        } else if (!e.shiftKey && document.activeElement === lastElement) {
+            e.preventDefault();
+            firstElement.focus();
+        }
+        return; // Allow default tab behavior otherwise
+    }
+    
+    // Handle arrow keys
+    const arrowKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'];
+    if (!arrowKeys.includes(e.key)) return;
+    
+    e.preventDefault(); // Prevent page scrolling
+
+    let nextIndex = currentIndex;
+    const numColumns = window.getComputedStyle(dom.modelSelectorPanel).gridTemplateColumns.split(' ').length;
+
+    switch (e.key) {
+        case 'ArrowRight':
+            nextIndex = (currentIndex + 1) % buttons.length;
+            break;
+        case 'ArrowLeft':
+            nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+            break;
+        case 'ArrowDown':
+            if (currentIndex + numColumns < buttons.length) {
+                nextIndex = currentIndex + numColumns;
+            }
+            break;
+        case 'ArrowUp':
+            if (currentIndex - numColumns >= 0) {
+                nextIndex = currentIndex - numColumns;
+            }
+            break;
+    }
+
+    buttons[nextIndex].focus();
+};
+
 const renderModelSelectorOptions = () => {
     dom.modelSelectorPanel.innerHTML = ''; // Clear previous options
     const currentChatModel = activeChatId ? chats[activeChatId].model : null;
 
     Object.keys(MODEL_CONFIG).forEach(key => {
         const model = MODEL_CONFIG[key];
-        const provider = key.split('/')[0]; // e.g., "google"
         const isActive = key === currentChatModel;
         const colorClasses = generateColorClasses(model.color);
 
         const optionEl = document.createElement('button');
-        optionEl.className = `w-full flex items-center justify-between text-left py-2 px-2 rounded-md text-sm ${isActive ? 'bg-gray-100 dark:bg-gray-700' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50'}`;
+        optionEl.className = `w-full flex items-center justify-between text-left p-3 rounded-lg text-sm transition-colors duration-150 ${isActive ? 'bg-indigo-100 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-50' : 'bg-gray-50 dark:bg-gray-900/70 hover:bg-gray-100 dark:hover:bg-gray-800'}`;
         optionEl.dataset.modelKey = key;
 
         let checkmarkSvg = '';
@@ -1477,10 +1571,7 @@ const renderModelSelectorOptions = () => {
         optionEl.innerHTML = `
             <div class="flex items-center space-x-3">
                 <span class="w-2.5 h-2.5 rounded-full ${colorClasses.bg}"></span>
-                <div>
-                    <span class="font-medium text-gray-800 dark:text-gray-100">${model.name}</span>
-                    <span class="block text-xs text-gray-500 dark:text-gray-400 capitalize">${provider}</span>
-                </div>
+                <span class="font-medium text-gray-800 dark:text-gray-100">${model.name}</span>
             </div>
             ${checkmarkSvg}
         `;
@@ -1494,10 +1585,8 @@ const renderModelSelectorOptions = () => {
                 const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
                 await chatDocRef.update({ model: key }).catch(err => console.error("Failed to update model in DB", err));
                 
-                // Re-render the chat to update all UI elements
                 renderActiveChat();
                 
-                // Close the panel
                 dom.modelSelectorPanel.style.opacity = '0';
                 dom.modelSelectorPanel.style.transform = 'scale(0.95)';
                 setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200);
@@ -1506,6 +1595,7 @@ const renderModelSelectorOptions = () => {
         dom.modelSelectorPanel.appendChild(optionEl);
     });
 };
+
 
 
 dom.modelSelectorBtn.addEventListener('click', e => {
@@ -1517,6 +1607,11 @@ dom.modelSelectorBtn.addEventListener('click', e => {
         setTimeout(() => {
             dom.modelSelectorPanel.style.opacity = '1';
             dom.modelSelectorPanel.style.transform = 'translateY(0) scale(1)';
+            // Focus the currently active model or the first one
+            const activeOrFirstButton = dom.modelSelectorPanel.querySelector('button[class*="dark:bg-gray-700"]') || dom.modelSelectorPanel.querySelector('button');
+            if (activeOrFirstButton) {
+                activeOrFirstButton.focus();
+            }
         }, 10); // A short delay ensures the transition plays
     } else {
         dom.modelSelectorPanel.style.opacity = '0';
@@ -1525,16 +1620,27 @@ dom.modelSelectorBtn.addEventListener('click', e => {
     }
 });
 
-                
-                document.addEventListener('click', () => { 
-                    dom.modelSelectorPanel.style.opacity = '0'; 
-                    dom.modelSelectorPanel.style.transform = 'scale(0.95)'; 
-                    setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200); 
-                    document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden')); 
-                });
+   document.addEventListener('click', () => {
+    // First, check if the panel is currently visible BEFORE starting to close it.
+    const isVisible = !dom.modelSelectorPanel.classList.contains('hidden');
+
+    // Start the closing animation for the model panel.
+    dom.modelSelectorPanel.style.opacity = '0';
+    dom.modelSelectorPanel.style.transform = 'scale(0.95)';
+    setTimeout(() => dom.modelSelectorPanel.classList.add('hidden'), 200);
+
+    // Now, use the 'isVisible' variable. If the panel was open, return focus to the button.
+    if (isVisible) {
+       dom.modelSelectorBtn.focus();
+    }
+    
+    // Also, ensure the smaller chat options menus are closed.
+    document.querySelectorAll('.chat-options-menu').forEach(m => m.classList.add('hidden'));
+});
 
                 // --- Core Interaction Listeners ---
                 dom.newChatBtn.addEventListener('click', createNewChat);
+                dom.modelSelectorPanel.addEventListener('keydown', handleModelSelectorNavigation);
                 dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
                 dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
                                     dom.stopBtn.addEventListener('click', () => {
@@ -1841,14 +1947,18 @@ dom.modelSelectorBtn.addEventListener('click', e => {
       The JIT compiler can't see classes constructed dynamically in JS. This comment block lists them out
       so Tailwind knows to include them in the production build.
 
-      Model Colors:
-      bg-blue-500 hover:bg-blue-500/90 text-blue-500 border-blue-500
+    Model Colors:
       bg-sky-500 hover:bg-sky-500/90 text-sky-500 border-sky-500
-      bg-green-500 hover:bg-green-500/90 text-green-500 border-green-500
+      bg-blue-500 hover:bg-blue-500/90 text-blue-500 border-blue-500
+      bg-blue-700 hover:bg-blue-700/90 text-blue-700 border-blue-700
       bg-teal-500 hover:bg-teal-500/90 text-teal-500 border-teal-500
-      bg-orange-500 hover:bg-orange-500/90 text-orange-500 border-orange-500
-      bg-amber-600 hover:bg-amber-600/90 text-amber-600 border-amber-600
+      bg-purple-500 hover:bg-purple-500/90 text-purple-500 border-purple-500
+      bg-violet-500 hover:bg-violet-500/90 text-violet-500 border-violet-500
       bg-indigo-600 hover:bg-indigo-600/90 text-indigo-600 border-indigo-600
+      bg-orange-500 hover:bg-orange-500/90 text-orange-500 border-orange-500
+      bg-rose-800 hover:bg-rose-800/90 text-rose-800 border-rose-800
+      bg-amber-400 hover:bg-amber-400/90 text-amber-400 border-amber-400
+      bg-emerald-500 hover:bg-emerald-500/90 text-emerald-500 border-emerald-500
 
       Toast Colors:
       bg-green-100 dark:bg-green-800 text-green-500 dark:text-green-200
