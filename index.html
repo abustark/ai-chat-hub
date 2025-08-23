@@ -1075,8 +1075,19 @@ if (pill) {
     
     const copyBtn = messageEl.querySelector('.copy-message-btn');
     if (copyBtn) {
-        copyBtn.addEventListener('click', () => {
-            navigator.clipboard.writeText(text).then(() => {
+                copyBtn.addEventListener('click', (event) => {
+            // Find the chat bubble associated with this button by traversing up to the message container
+            const messageContainer = event.currentTarget.closest('.message-container');
+            if (!messageContainer) return;
+
+            // Find the prose element within the bubble, which holds the rendered message content
+            const proseContent = messageContainer.querySelector('.prose');
+            if (!proseContent) return;
+
+            // Use the textContent of the prose element, which is the clean, un-rendered text
+            const textToCopy = proseContent.textContent || '';
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast("Copied to clipboard!");
             }).catch(err => {
                 showToast("Failed to copy.", "error");
@@ -1124,10 +1135,16 @@ if (pill) {
     dom.chatHistoryContainer.scrollTop = dom.chatHistoryContainer.scrollHeight;
 };
 
+/* NEW Code to Add (This replaces the old start of the function) */
  const sendMessage = async () => {
+    const activeUser = auth.currentUser; // Define user ONCE at the top.
+    if (!activeUser) {
+        console.error("Attempted to send message without an active user.");
+        return; // Stop if there's no user.
+    }
+
     // Check for guest user message limit
-    const activeUser = auth.currentUser;
-    if (activeUser && activeUser.isAnonymous) {
+    if (activeUser.isAnonymous) {
         if (guestSessionMessageCount >= GUEST_MESSAGE_LIMIT) {
             showGuestLimitModal();
             return;
@@ -1148,6 +1165,17 @@ if (pill) {
 const userMessage = { role: 'user', content: message, model: currentChat.model };   
      appendMessage(userMessage);
     currentChat.messages.push(userMessage);
+        
+    // Save the user's message to Firestore immediately to prevent data loss on refresh.
+    try {
+        const chatDocRef = db.collection('users').doc(activeUser.uid).collection('chats').doc(activeChatId);
+        await chatDocRef.update({ messages: currentChat.messages });
+    } catch (dbError) {
+        console.error("Error saving user message to Firestore:", dbError);
+        showToast("Error: Could not save your message.", "error");
+        // We can choose to stop here if saving is critical
+        return; 
+    }
 
     if (auth.currentUser && auth.currentUser.isAnonymous) {
         guestSessionMessageCount++;
@@ -1300,12 +1328,9 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
 
     } catch (error) {
                         if (error.name === 'AbortError') {
-            console.log("Chat generation aborted. Saving partial response.");
-            const finalContent = fullReply || "";
-            // This is now the ONLY place that saves the partial message to the data array.
-            if (finalContent && !currentChat.messages.some(m => m.content === finalContent)) {
-                 currentChat.messages.push({ role: 'assistant', content: finalContent, model: currentChat.model });
-            }
+            // The stop button listener now handles saving the partial response.
+            // We just need to log that the operation was cancelled.
+            console.log("Chat generation aborted by user.");
         } else {
             console.error("sendMessage stream error:", error);
             latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server.";
@@ -1521,19 +1546,45 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 dom.newChatBtn.addEventListener('click', createNewChat);
                 dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
                 dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
-                                    dom.stopBtn.addEventListener('click', () => {
-                    // This listener is now ONLY responsible for UI and aborting.
+                                    dom.stopBtn.addEventListener('click', async () => {
+    
+                    // This listener now handles UI, data persistence, and aborting.
+                    const currentUser = auth.currentUser;
+                    if (!currentUser || !activeChatId || !chats[activeChatId]) return;
+
+                    // 1. Get the partial response directly from the DOM.
                     const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
-                    if (allBotSpans.length > 0) {
-                        const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
-                        const finalContent = latestBotMessageSpan.querySelector('.content-span')?.textContent || "";
+                    const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
+                    let finalContent = "";
+
+                    if (latestBotMessageSpan) {
+                        finalContent = latestBotMessageSpan.querySelector('.content-span')?.textContent || "";
+                        // 2. Update the UI to show the generation was stopped.
                         latestBotMessageSpan.innerHTML = marked.parse(finalContent) + '<p class="text-xs text-gray-500 dark:text-gray-400 italic mt-2">-- Generation stopped --</p>';
                     }
+                    
+                    // 3. Add the partial message to the local state.
+                    const currentChat = chats[activeChatId];
+                    // Avoid adding empty or duplicate messages
+                    if (finalContent && currentChat.messages[currentChat.messages.length - 1]?.content !== finalContent) {
+                        currentChat.messages.push({ role: 'assistant', content: finalContent, model: currentChat.model });
+                    }
 
+                    // 4. Immediately save this new state to Firestore.
+                    try {
+                        const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+                        await chatDocRef.update({ messages: currentChat.messages });
+                    } catch (dbError) {
+                        console.error("Error saving partial response to Firestore:", dbError);
+                        showToast("Warning: Could not save partial response.", "error");
+                    }
+
+                    // 5. Abort the fetch request.
                     if (abortController) {
                         abortController.abort();
                     }
                 });
+                            
                 dom.sendBtn.addEventListener('click', sendMessage);
                 dom.voiceBtn.addEventListener('click', startVoiceRecognition);
                 dom.sidebarToggle.addEventListener('click', e => { e.stopPropagation(); dom.sidebar.classList.toggle('-translate-x-full'); dom.sidebarOverlay.classList.toggle('hidden'); });
