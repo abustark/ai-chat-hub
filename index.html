@@ -88,6 +88,37 @@
 
         .message-container:hover .copy-message-btn { opacity: 1; }
 .copy-message-btn { opacity: 0; transition: opacity 0.2s ease-out; }
+        
+                .prose pre { position: relative; }
+               .code-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #374151; /* gray-700 */
+            padding: 0.3rem 0.75rem; /* Slightly reduced vertical padding for a tighter look */
+            border-top-left-radius: 0.375rem;
+            border-top-right-radius: 0.375rem;
+        }
+         .code-lang-name { /* This rule is preserved */
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.05em;
+            color: #9ca3af; /* gray-400 */
+        }
+        .copy-code-btn {
+            /* We no longer need any position, top, right, or transform! */
+            background-color: transparent;
+            color: #9ca3af; /* gray-400 */
+            padding: 0.25rem;
+            border-radius: 0.25rem;
+            transition: color 0.2s;
+        }
+        .copy-code-btn:hover { color: #e5e7eb; /* gray-200 */ }
+        .prose pre > code { /* The ">" is important to override Tailwind Typography */
+            border-top-left-radius: 0 !important;
+            border-top-right-radius: 0 !important;
+        }
 
     </style>
 
@@ -543,6 +574,7 @@ const firebaseConfig = {
             let isAppInitialized = false;
             let vantaEffect = null;
             let recognition; // For voice recognition
+            let titleAnimationInterval = null; // For the chat title loading animation
 
             // =================================================================================
             // AUTHENTICATION FUNCTIONS
@@ -803,21 +835,27 @@ if (pill) {
                 closePromptModal();
             };
 
-                   const renameChat = async (chatId, newName) => {
+                    const renameChat = async (chatId, newName) => {
+                                    // Stop any title-generating animation that might be running
+            if (titleAnimationInterval) {
+                clearInterval(titleAnimationInterval);
+                titleAnimationInterval = null;
+            }
             const currentUser = auth.currentUser;
             const trimmedName = newName.trim();
-            if (chats[chatId] && trimmedName && currentUser) {
-                chats[chatId].name = trimmedName; // Update local state
+            if (!chats[chatId] || !trimmedName || !currentUser) return;
 
-                // IMMEDIATELY update the UI in the header
-                dom.chatTitle.textContent = trimmedName;
-                dom.chatTitleInput.value = trimmedName;
+            // 1. Update the local state first
+            chats[chatId].name = trimmedName;
 
-                // Update Firestore
-                const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
-                await chatDocRef.update({ name: trimmedName }).catch(err => console.error("Failed to rename chat in DB", err));
-                
-                renderChatList(); // Update sidebar UI
+            // 2. Update Firestore in the background
+            const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId);
+            chatDocRef.update({ name: trimmedName }).catch(err => console.error("Failed to rename chat in DB", err));
+
+            // 3. Force a complete UI refresh
+            renderChatList(); // Redraws the sidebar
+            if (String(chatId) === String(activeChatId)) {
+                renderActiveChat(); // Redraws the main header and content area
             }
         };
             
@@ -962,7 +1000,7 @@ if (pill) {
                         id: newChatId,
                         name: "New Chat",
                         model: Object.keys(MODEL_CONFIG)[0],
-                        systemPrompt: "You are a helpful AI assistant.",
+                systemPrompt: "You are an AI assistant powered by ABot, a multi-model chat platform. Your goal is to be helpful, accurate, and concise. When asked about yourself, you can mention you are running on the ABot application.",
                 messages: [{ role: "assistant", content: "Hello! How can I assist you today?", model: Object.keys(MODEL_CONFIG)[0] }]
                     };
 
@@ -1049,20 +1087,37 @@ if (pill) {
     
     dom.chatHistory.appendChild(messageEl);
 
-    if (!isUser && isHistory) {
+            if (!isUser && isHistory) {
         messageEl.querySelectorAll('pre code').forEach(block => {
-            const pre = block.parentElement; 
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'copy-code-btn'; 
-            copyBtn.textContent = 'Copy';
-            copyBtn.addEventListener('click', () => { 
-                navigator.clipboard.writeText(block.textContent).then(() => { 
-                    copyBtn.textContent = 'Copied!'; 
-                    setTimeout(() => { copyBtn.textContent = 'Copy'; }, 2000); 
-                }); 
-            });
-            pre.appendChild(copyBtn); 
             hljs.highlightElement(block);
+
+            const pre = block.parentElement;
+            const langClass = Array.from(block.classList).find(cls => cls.startsWith('language-'));
+            const language = langClass ? langClass.replace('language-', '') : 'text';
+
+            const header = document.createElement('div');
+            header.className = 'code-block-header';
+            
+            const langNameSpan = document.createElement('span');
+            langNameSpan.className = 'code-lang-name';
+            langNameSpan.textContent = language;
+
+            const copyBtn = document.createElement('button');
+            copyBtn.className = 'copy-code-btn';
+            const copyIconHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>`;
+            const checkIconHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>`;
+            copyBtn.innerHTML = copyIconHTML;
+            
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(block.textContent).then(() => {
+                    copyBtn.innerHTML = checkIconHTML;
+                    setTimeout(() => { copyBtn.innerHTML = copyIconHTML; }, 2000);
+                });
+            });
+
+            header.appendChild(langNameSpan);
+            header.appendChild(copyBtn);
+            pre.insertBefore(header, block);
         });
     }
 
@@ -1084,6 +1139,8 @@ if (pill) {
 
     const currentChat = chats[activeChatId];
     if (!currentChat) return;
+     
+     let fullReply = "";
 
     abortController = new AbortController(); // Create a new controller for this request
 
@@ -1096,10 +1153,20 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
         guestSessionMessageCount++;
     }
 
-    if (currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1) {
-        currentChat.name = message.substring(0, 30) + (message.length > 30 ? '...' : '');
-        renderChatList();
-    }
+        // Check if this is the first user message in a new chat to trigger intelligent naming
+    const isFirstUserMessage = currentChat.name === "New Chat" && currentChat.messages.filter(m => m.role === 'user').length === 1;
+     
+        if (isFirstUserMessage) {
+                    dom.chatTitle.textContent = "Generating Title."; 
+        let dotCount = 1;
+        // Start the animation and store its ID
+        titleAnimationInterval = setInterval(() => {
+            dotCount = (dotCount % 3) + 1; // Cycle dotCount between 1, 2, 3
+            if (dom.chatTitle.textContent.startsWith("Generating")) { // Only animate if not already renamed
+                dom.chatTitle.textContent = "Generating Title" + ".".repeat(dotCount);
+            }
+        }, 500); // Update the text every half-second
+    } 
 
     dom.messageInput.value = '';
     dom.messageInput.style.height = 'auto';
@@ -1107,6 +1174,9 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
 
     dom.sendBtn.classList.add('hidden');
     dom.stopBtn.classList.remove('hidden');
+     
+    dom.modelSelectorBtn.disabled = true;
+    dom.modelSelectorBtn.classList.add('opacity-50', 'cursor-not-allowed');
 
     const isGoogleModel = currentChat.model.startsWith('google/');
     // Append the placeholder message with the current model's info
@@ -1147,7 +1217,6 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
         
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
-        let fullReply = "";
         let buffer = "";
         let isFirstChunk = true;
 
@@ -1228,37 +1297,84 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
 
         currentChat.messages.push({ role: 'assistant', content: fullReply, model: currentChat.model });
         
+
+    } catch (error) {
+                        if (error.name === 'AbortError') {
+            console.log("Chat generation aborted. Saving partial response.");
+            const finalContent = fullReply || "";
+            // This is now the ONLY place that saves the partial message to the data array.
+            if (finalContent && !currentChat.messages.some(m => m.content === finalContent)) {
+                 currentChat.messages.push({ role: 'assistant', content: finalContent, model: currentChat.model });
+            }
+        } else {
+            console.error("sendMessage stream error:", error);
+            latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server.";
+        }
+    } 
+        finally {
+        // --- THIS IS THE FINAL, CORRECT VERSION ---
+
+        // 1. Save the final state of the chat to Firestore.
         try {
-            const chatDocRef = db.collection('users').doc(currentUser.uid).collection('chats').doc(activeChatId);
+            const chatDocRef = db.collection('users').doc(activeUser.uid).collection('chats').doc(activeChatId);
             await chatDocRef.update({
                 messages: currentChat.messages,
                 name: currentChat.name
             });
         } catch (dbError) {
-            console.error("Error saving chat update to Firestore:", dbError);
+            console.error("Error saving final chat state to Firestore:", dbError);
         }
-
-    } catch (error) {
-        if (error.name === 'AbortError') {
-            console.log("Chat generation stopped by user.");
-            const contentSpan = latestBotMessageSpan.querySelector('.content-span');
-            const cursor = latestBotMessageSpan.querySelector('.blinking-cursor');
-            const finalContent = contentSpan ? contentSpan.textContent : "";
-            if (cursor) cursor.remove();
-            if (finalContent) {
-                currentChat.messages.push({ role: 'assistant', content: finalContent, model: currentChat.model });
-            }
-        } else {
-            console.error("sendMessage stream error:", error);
-            latestBotMessageSpan.innerHTML = "<strong>Error:</strong> Could not get response from the server. Please check the console and try again.";
-        }
-    } finally {
+        
+        // 2. Reset the UI buttons.
         dom.sendBtn.classList.remove('hidden');
         dom.stopBtn.classList.add('hidden');
         abortController = null;
+        dom.modelSelectorBtn.disabled = false;
+        dom.modelSelectorBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        // 3. Generate the title if it was the first message.
+        if (isFirstUserMessage) {
+            try {
+                const conversationForTitle = currentChat.messages.slice(1, 3).map(m => `${m.role}: ${m.content}`).join('\n');
+                const titlePrompt = `Based on this conversation, create a concise, 5-word-or-less title. Do not use quotation marks.\n\n---\n${conversationForTitle}`;
+                const idToken = await activeUser.getIdToken(true);
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${idToken}` },
+                    body: JSON.stringify({ model: 'google/gemini-2.5-flash', messages: [{ role: 'user', content: titlePrompt }] })
+                });
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let title = "";
+                while(true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+                    const chunk = decoder.decode(value);
+                    const lines = chunk.split('\n');
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const jsonStr = line.substring(6);
+                            if (jsonStr.trim() === "[DONE]") continue;
+                            try {
+                                const parsed = JSON.parse(jsonStr);
+                                title += (parsed.candidates?.[0]?.content?.parts?.[0]?.text) || (parsed.choices?.[0]?.delta?.content) || '';
+                            } catch {}
+                        }
+                    }
+                }
+                if (title) {
+                    await renameChat(activeChatId, title.trim().replace(/"/g, ''));
+                }
+            } catch (titleError) {
+                console.error("Could not generate title:", titleError);
+                await renameChat(activeChatId, message.substring(0, 30)); // Fallback
+            }
+        }
     }
 };
-
+        
+    
                 const startVoiceRecognition = () => {
             if (!recognition) {
                 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1405,7 +1521,15 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 dom.newChatBtn.addEventListener('click', createNewChat);
                 dom.messageInput.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; });
                 dom.messageInput.addEventListener('keydown', e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), sendMessage()));
-                dom.stopBtn.addEventListener('click', () => {
+                                    dom.stopBtn.addEventListener('click', () => {
+                    // This listener is now ONLY responsible for UI and aborting.
+                    const allBotSpans = dom.chatHistory.querySelectorAll('span[id^="bot-msg-"]');
+                    if (allBotSpans.length > 0) {
+                        const latestBotMessageSpan = allBotSpans[allBotSpans.length - 1];
+                        const finalContent = latestBotMessageSpan.querySelector('.content-span')?.textContent || "";
+                        latestBotMessageSpan.innerHTML = marked.parse(finalContent) + '<p class="text-xs text-gray-500 dark:text-gray-400 italic mt-2">-- Generation stopped --</p>';
+                    }
+
                     if (abortController) {
                         abortController.abort();
                     }
