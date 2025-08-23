@@ -1780,18 +1780,27 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 } else {
                     // --- USER IS LOGGED OUT ---
                     if (window.VANTA && !vantaEffect) {
-                        vantaEffect = VANTA.NET({
-                            el: "#vanta-bg",
-                            mouseControls: true,
-                            touchControls: true,
-                            gyroControls: false,
-                            scale: 1.00,
-                            scaleMobile: 1.20,
-                            color: 0x8b5cf6,
-                            backgroundColor: 0x0f172a,
-                            points: 12.00,
-                            maxDistance: 18.00
-                        });
+                        try {
+                            vantaEffect = VANTA.NET({
+                                el: "#vanta-bg",
+                                mouseControls: true,
+                                touchControls: true,
+                                gyroControls: false,
+                                scale: 1.00,
+                                scaleMobile: 1.20,
+                                color: 0x8b5cf6,
+                                backgroundColor: 0x0f172a,
+                                points: 12.00,
+                                maxDistance: 18.00
+                            });
+                        } catch (e) {
+                            console.error("Vanta.js initialization failed:", e);
+                            // If Vanta fails, just ensure the background is visible with the fallback color.
+                            const vantaBg = document.getElementById('vanta-bg');
+                            if (vantaBg) {
+                                vantaBg.style.backgroundColor = '#0f172a'; // The same as the Vanta config
+                            }
+                        }
                     }
                     
                     // dom.appContainer is already hidden
