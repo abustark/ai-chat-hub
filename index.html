@@ -11,6 +11,7 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     
     <style>
             html { font-size: 15px; }
@@ -164,10 +165,14 @@
             </div>
 
             <div class="space-y-4">
-                <button id="google-signin-btn" class="w-full flex items-center justify-center py-3 px-4 bg-white dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
-                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.219,0-9.559-3.397-11.28-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
-                    <span class="font-medium text-gray-700 dark:text-gray-200">Sign in with Google</span>
-                </button>
+                <div id="g_id_onload"
+                     data-client_id="784623545561-f9qumqjcsek7g368657cloq8rqc0kurj.apps.googleusercontent.com"
+                     data-callback="handleCredentialResponse"
+                     data-context="signin"
+                     data-ux_mode="popup"
+                     data-auto_prompt="false">
+                </div>
+                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
                 <div class="flex items-center my-6">
                     <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
                     <span class="px-4 text-sm text-gray-500 dark:text-gray-400">or</span>
@@ -505,7 +510,6 @@ const firebaseConfig = {
                 showLogin: document.getElementById('show-login'),
                 showForgotPassword: document.getElementById('show-forgot-password'),
                 backToLogin: document.getElementById('back-to-login'),
-                googleSigninBtn: document.getElementById('google-signin-btn'),
                 guestSigninBtn: document.getElementById('guest-signin-btn'),
                 signoutBtn: document.getElementById('signoutBtn'),
                 errorMessage: document.getElementById('error-message'),
@@ -627,15 +631,16 @@ const firebaseConfig = {
 
 
 
-            const signInWithGoogle = () => {
-                dom.errorMessage.textContent = '';
-                const provider = new firebase.auth.GoogleAuthProvider();
-                auth.signInWithPopup(provider)
+            const handleCredentialResponse = (response) => {
+                const id_token = response.credential;
+                const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+                auth.signInWithCredential(credential)
                     .catch((error) => {
                         console.error("Google sign-in error:", error);
                         dom.errorMessage.textContent = error.message;
                     });
-            };
+            }
+            window.handleCredentialResponse = handleCredentialResponse;
 
             const signInAsGuest = () => {
                 dom.errorMessage.textContent = '';
@@ -1705,7 +1710,6 @@ dom.modelSelectorBtn.addEventListener('click', e => {
             dom.showLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
             dom.showForgotPassword.addEventListener('click', (e) => { e.preventDefault(); showForgotPasswordView(); });
             dom.backToLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
-            dom.googleSigninBtn.addEventListener('click', signInWithGoogle);
             dom.guestSigninBtn.addEventListener('click', signInAsGuest);
 
             dom.forgotPasswordForm.addEventListener('submit', (e) => {
