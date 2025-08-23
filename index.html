@@ -307,7 +307,7 @@
 
             <div class="flex flex-shrink-0 items-center space-x-1">
                     <div class="relative inline-block">
-   <button id="modelSelectorBtn" class="flex items-center space-x-2 w-auto bg-gray-100 dark:bg-gray-700/80 pl-4 pr-3 py-2 rounded-full text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 dark:focus:ring-gray-600 dark:focus:ring-offset-gray-800">
+      <button id="modelSelectorBtn" class="flex items-center space-x-2 w-auto bg-gray-100 dark:bg-gray-700/80 pl-4 pr-3 py-2 rounded-lg text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-300 dark:focus:ring-gray-600 dark:focus:ring-offset-gray-800">
    <span id="modelSelectorDot" class="w-2.5 h-2.5 rounded-full bg-gray-400"></span>
    <span id="modelSelectorLabel" class="font-medium">Select Model</span>
    <svg class="w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.53.22l3.5 3.5a.75.75 0 01-1.06 1.06L10 4.81 6.53 8.28a.75.75 0 01-1.06-1.06l3.5-3.5A.75.75 0 0110 3zm-3.72 9.53a.75.75 0 011.06 0L10 15.19l3.47-3.47a.75.75 0 111.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 010-1.06z" clip-rule="evenodd" /></svg>
@@ -1753,8 +1753,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
             // --- CENTRAL AUTH STATE CONTROLLER ---
             auth.onAuthStateChanged(async (user) => {       
                 if (user && isAppInitialized) return; 
-                if (!user && !isAppInitialized) return; // Prevents logout logic from running multiple times too
-
+                
                 if (user) {
                     isAppInitialized = true; // Set the lock immediately
                     // --- USER IS LOGGED IN ---
