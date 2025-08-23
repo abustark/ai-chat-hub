@@ -165,7 +165,10 @@
             </div>
 
             <div class="space-y-4">
-                <div id="google-signin-button-placeholder" class="flex justify-center"></div>
+                                <button id="google-signin-btn" class="w-full flex items-center justify-center py-3 px-4 bg-white dark:bg-slate-700/50 border border-gray-300 dark:border-slate-600 rounded-lg shadow-sm hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-900">
+                    <svg class="w-5 h-5 mr-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.219,0-9.559-3.397-11.28-7.962l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.574l6.19,5.238C39.99,35.59,44,29.89,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                    <span class="font-medium text-gray-700 dark:text-gray-200">Sign in with Google</span>
+                </button>
                 <div class="flex items-center my-6">
                     <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
                     <span class="px-4 text-sm text-gray-500 dark:text-gray-400">or</span>
@@ -622,18 +625,6 @@ const firebaseConfig = {
                 dom.errorMessage.textContent = message;
             };
 
-
-
-            const handleCredentialResponse = (response) => {
-                const id_token = response.credential;
-                const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
-                auth.signInWithCredential(credential)
-                    .catch((error) => {
-                        console.error("Google sign-in error:", error);
-                        dom.errorMessage.textContent = error.message;
-                    });
-            }
-            window.handleCredentialResponse = handleCredentialResponse;
 
             const signInAsGuest = () => {
                 dom.errorMessage.textContent = '';
@@ -1435,8 +1426,7 @@ const userMessage = { role: 'user', content: message, model: currentChat.model }
             // =================================================================================
             
                         function initApp() {
-                if (isAppInitialized) return; 
-
+                            
                 // --- Main App Listeners ---
 
                 if (!document.documentElement.classList.contains('dark')) {
@@ -1698,19 +1688,46 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 isAppInitialized = true;
             }
             
-            // --- ATTACH EVENT LISTENERS FOR AUTH FORMS ---
+                    // --- ATTACH EVENT LISTENERS FOR AUTH FORMS ---
+
+            // 1. Define the callback function that Firebase will use after a successful sign-in.
+            async function handleCredentialResponse(response) {
+                try {
+                    const id_token = response.credential;
+                    const credential = firebase.auth.GoogleAuthProvider.credential(id_token);
+                    await auth.signInWithCredential(credential);
+                    // The onAuthStateChanged listener handles switching to the app view.
+                } catch (error) {
+                    console.error("Google credential sign-in error:", error);
+                    handleAuthError(error);
+                }
+            }
+
+            // 2. Attach standard listeners.
             dom.showSignup.addEventListener('click', (e) => { e.preventDefault(); showSignupView(); });
             dom.showLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
             dom.showForgotPassword.addEventListener('click', (e) => { e.preventDefault(); showForgotPasswordView(); });
             dom.backToLogin.addEventListener('click', (e) => { e.preventDefault(); showLoginView(); });
-            dom.guestSigninBtn.addEventListener('click', signInAsGuest);
+            
+            // 3. Attach listener for YOUR custom Google button.
+            dom.googleSigninBtn = document.getElementById('google-signin-btn');
+            if (dom.googleSigninBtn) {
+                dom.googleSigninBtn.addEventListener('click', () => {
+                    if (window.google && google.accounts && google.accounts.id) {
+                         // Manually trigger the modern Google pop-up.
+                        google.accounts.id.prompt();
+                    }
+                });
+            }
 
+            dom.guestSigninBtn.addEventListener('click', signInAsGuest);
+            
             dom.forgotPasswordForm.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = document.getElementById('forgot-password-email').value;
                 auth.sendPasswordResetEmail(email)
                     .then(() => {
-                        dom.errorMessage.style.color = '#22c55e'; // green
+                        dom.errorMessage.style.color = '#22c55e';
                         dom.errorMessage.textContent = 'Success! Check your email for a reset link.';
                     })
                     .catch(handleAuthError);
@@ -1721,8 +1738,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 dom.errorMessage.textContent = '';
                 const email = document.getElementById('signup-email').value;
                 const password = document.getElementById('signup-password').value;
-                auth.createUserWithEmailAndPassword(email, password)
-                .catch(handleAuthError);
+                auth.createUserWithEmailAndPassword(email, password).catch(handleAuthError);
             });
             
             dom.loginForm.addEventListener('submit', (e) => {
@@ -1730,15 +1746,17 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                 dom.errorMessage.textContent = '';
                 const email = document.getElementById('login-email').value;
                 const password = document.getElementById('login-password').value;
-                auth.signInWithEmailAndPassword(email, password)
-                .catch(handleAuthError);
+                auth.signInWithEmailAndPassword(email, password).catch(handleAuthError);
             });
 
 
             // --- CENTRAL AUTH STATE CONTROLLER ---
-                       
-      auth.onAuthStateChanged(async (user) => {
+            auth.onAuthStateChanged(async (user) => {       
+                if (user && isAppInitialized) return; 
+                if (!user && !isAppInitialized) return; // Prevents logout logic from running multiple times too
+
                 if (user) {
+                    isAppInitialized = true; // Set the lock immediately
                     // --- USER IS LOGGED IN ---
                     if (vantaEffect) {
                         vantaEffect.destroy();
@@ -1753,11 +1771,11 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                     if (user.isAnonymous) {
                         dom.userEmailDisplay.textContent = 'Guest User';
                         dom.userAvatar.src = `https://i.pravatar.cc/40?u=guest`;
-                        dom.importChatBtn.style.display = 'none'; // Hide for guests
+                        dom.importChatBtn.style.display = 'none';
                     } else {
                         dom.userEmailDisplay.textContent = user.displayName || user.email;
                         dom.userAvatar.src = user.photoURL || `https://i.pravatar.cc/40?u=${user.uid}`;
-                        dom.importChatBtn.style.display = 'flex'; // Show for signed-in users
+                        dom.importChatBtn.style.display = 'flex';
                     }
                     
                     dom.chatList.innerHTML = `<div class="p-2 space-y-2"><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-5/6"></div><div class="h-9 bg-gray-200 dark:bg-gray-700/50 rounded-md animate-pulse w-4/6"></div></div>`;
@@ -1776,56 +1794,43 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                     }
 
                 } else {
+                    
                     // --- USER IS LOGGED OUT ---
                     dom.appContainer.style.display = 'none';
                     if (window.VANTA && !vantaEffect) {
                         try {
                             vantaEffect = VANTA.NET({
                                 el: "#vanta-bg",
-                                mouseControls: true,
-                                touchControls: true,
-                                gyroControls: false,
-                                scale: 1.00,
-                                scaleMobile: 1.20,
-                                color: 0x8b5cf6,
-                                backgroundColor: 0x0f172a,
-                                points: 12.00,
-                                maxDistance: 18.00
+                                mouseControls: true, touchControls: true, gyroControls: false,
+                                scale: 1.00, scaleMobile: 1.20, color: 0x8b5cf6,
+                                backgroundColor: 0x0f172a, points: 12.00, maxDistance: 18.00
                             });
                         } catch (e) {
                             console.error("Vanta.js initialization failed:", e);
-                            // If Vanta fails, just ensure the background is visible with the fallback color.
                             const vantaBg = document.getElementById('vanta-bg');
-                            if (vantaBg) {
-                                vantaBg.style.backgroundColor = '#0f172a'; // The same as the Vanta config
-                            }
+                            if (vantaBg) { vantaBg.style.backgroundColor = '#0f172a'; }
                         }
                     }
                     
-                    // dom.appContainer is already hidden
                     dom.authSection.style.display = 'flex';
                     chats = {}; 
                     activeChatId = null;
                     showLoginView();
 
-                    // Initialize Google Sign-In Button
+                    // Correctly initialize Google's library here, only when it's needed.
                     if (window.google && google.accounts && google.accounts.id) {
                         google.accounts.id.initialize({
                             client_id: "784623545561-f9qumqjcsek7g368657cloq8rqc0kurj.apps.googleusercontent.com",
                             callback: handleCredentialResponse
                         });
-                        google.accounts.id.renderButton(
-                            document.getElementById("google-signin-button-placeholder"),
-                            { theme: "outline", size: "large", type: "standard", shape: "rectangular", text: "signin_with", logo_alignment: "left" }
-                        );
                     }
                 }
 
-                // HIDE THE LOADER IN BOTH CASES
+                // HIDE THE LOADER IN BOTH CASES (Correctly placed)
                 dom.appLoader.style.opacity = '0';
                 setTimeout(() => {
                     dom.appLoader.style.display = 'none';
-                }, 300); // Match the opacity transition duration
+                }, 300);
             });
         }
         document.addEventListener('DOMContentLoaded', main);

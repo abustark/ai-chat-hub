@@ -69,10 +69,6 @@ app.get('/api/firebase-config', (req, res) => {
 app.post('/api/chat', checkAuth, async (req, res) => {
     const { model, messages } = req.body;
 
-    console.log("--- New Chat Request Received ---");
-    console.log("Model:", model);
-    console.log("Messages being sent to AI:", JSON.stringify(messages, null, 2));
-
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
@@ -82,8 +78,7 @@ app.post('/api/chat', checkAuth, async (req, res) => {
 
     try {
         if (isGoogle) {
-            // --- NON-STREAMING LOGIC FOR GOOGLE GEMINI ---
-            console.log("Using non-streaming handler for Google model.");
+            
             const apiKey = process.env.GEMINI_API_KEY;
             if (!apiKey) throw new Error('GEMINI_API_KEY not configured.');
 
@@ -104,7 +99,6 @@ app.post('/api/chat', checkAuth, async (req, res) => {
             }
 
             const fullData = await response.json();
-            console.log("Received full response from Google:", JSON.stringify(fullData, null, 2));
 
             // Extract the full text and send it as a single data event
             const fullText = fullData.candidates?.[0]?.content?.parts?.[0]?.text || "";
@@ -112,8 +106,7 @@ app.post('/api/chat', checkAuth, async (req, res) => {
             res.write(`data: ${JSON.stringify(sseData)}\n\n`);
 
         } else {
-            // --- STREAMING LOGIC FOR OPENROUTER ---
-            console.log("Using streaming handler for OpenRouter model.");
+            
             const apiKey = process.env.OPENROUTER_API_KEY;
             if (!apiKey) throw new Error('OPENROUTER_API_KEY not configured.');
 
