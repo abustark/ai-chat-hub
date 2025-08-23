@@ -165,14 +165,7 @@
             </div>
 
             <div class="space-y-4">
-                <div id="g_id_onload"
-                     data-client_id="784623545561-f9qumqjcsek7g368657cloq8rqc0kurj.apps.googleusercontent.com"
-                     data-callback="handleCredentialResponse"
-                     data-context="signin"
-                     data-ux_mode="fedcm"
-                     data-auto_prompt="false">
-                </div>
-                <div class="g_id_signin" data-type="standard" data-shape="rectangular" data-theme="outline" data-text="signin_with" data-size="large" data-logo_alignment="left"></div>
+                <div id="google-signin-button-placeholder" class="flex justify-center"></div>
                 <div class="flex items-center my-6">
                     <div class="flex-grow h-px bg-gray-300 dark:bg-slate-700"></div>
                     <span class="px-4 text-sm text-gray-500 dark:text-gray-400">or</span>
@@ -1814,6 +1807,18 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                     chats = {}; 
                     activeChatId = null;
                     showLoginView();
+
+                    // Initialize Google Sign-In Button
+                    if (window.google && google.accounts && google.accounts.id) {
+                        google.accounts.id.initialize({
+                            client_id: "784623545561-f9qumqjcsek7g368657cloq8rqc0kurj.apps.googleusercontent.com",
+                            callback: handleCredentialResponse
+                        });
+                        google.accounts.id.renderButton(
+                            document.getElementById("google-signin-button-placeholder"),
+                            { theme: "outline", size: "large", type: "standard", shape: "rectangular", text: "signin_with", logo_alignment: "left" }
+                        );
+                    }
                 }
 
                 // HIDE THE LOADER IN BOTH CASES
