@@ -1753,8 +1753,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
             // --- CENTRAL AUTH STATE CONTROLLER ---
             auth.onAuthStateChanged(async (user) => {       
                 if (user && isAppInitialized) return; 
-                if (!user && !isAppInitialized) return; // Prevents logout logic from running multiple times too
-
+                
                 if (user) {
                     isAppInitialized = true; // Set the lock immediately
                     // --- USER IS LOGGED IN ---
