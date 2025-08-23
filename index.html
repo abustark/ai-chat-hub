@@ -1075,6 +1075,7 @@ if (pill) {
     
     const copyBtn = messageEl.querySelector('.copy-message-btn');
     if (copyBtn) {
+        
                 copyBtn.addEventListener('click', (event) => {
             // Find the chat bubble associated with this button by traversing up to the message container
             const messageContainer = event.currentTarget.closest('.message-container');
