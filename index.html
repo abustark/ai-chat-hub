@@ -1747,8 +1747,8 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                         vantaEffect = null;
                     }
 
+                    dom.authSection.style.display = 'none';
                     dom.appContainer.style.display = 'flex';
-                    // dom.authSection is already hidden
                     
                     initApp();
 
@@ -1779,6 +1779,7 @@ dom.modelSelectorBtn.addEventListener('click', e => {
 
                 } else {
                     // --- USER IS LOGGED OUT ---
+                    dom.appContainer.style.display = 'none';
                     if (window.VANTA && !vantaEffect) {
                         try {
                             vantaEffect = VANTA.NET({
