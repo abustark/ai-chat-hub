@@ -647,6 +647,7 @@ const firebaseConfig = {
             };
 
             const signOutUser = () => {
+                isAppInitialized = false; // Reset the app state
                 auth.signOut().catch((error) => console.error('Sign out error', error));
             };
 
@@ -1806,7 +1807,6 @@ dom.modelSelectorBtn.addEventListener('click', e => {
                     
                     // dom.appContainer is already hidden
                     dom.authSection.style.display = 'flex';
-                    isAppInitialized = false; 
                     chats = {}; 
                     activeChatId = null;
                     showLoginView();
