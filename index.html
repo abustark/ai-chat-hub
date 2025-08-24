@@ -284,8 +284,7 @@
                 </button>
             </div>
 
-            <!-- The Model Panel is now a direct child of the header, allowing it to expand freely -->
-            <div id="modelSelectorPanel" class="modal-transition absolute top-full inset-x-0 mx-auto mt-2 w-full max-w-5xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border dark:border-gray-600 rounded-lg shadow-lg z-20 hidden origin-top p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
+           <div id="modelSelectorPanel" class="modal-transition absolute top-full inset-x-0 mx-auto mt-2 w-full max-w-5xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border dark:border-gray-600 rounded-lg shadow-lg z-20 hidden origin-top p-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 max-h-[75vh] overflow-y-auto scrollbar-custom" style="opacity: 0; transform: translateY(-10px) scale(0.98);"></div>
     </header>
         
     <main class="relative flex-1 flex flex-col overflow-hidden min-h-0">
@@ -447,38 +446,42 @@ You've reached the message limit for guest users. <strong class="text-gray-700 d
         // This is the main entry point for our entire application.
         function main() {
 
-                   const COLOR_MAP = {
+               const COLOR_MAP = {
             // Google
-            gemini: 'sky-500', 
-            'gemini-pro': 'blue-500',
+            gemini: { name: 'sky-500', isLight: false },
+            'gemini-pro': { name: 'blue-500', isLight: false },
             // DeepSeek
-            'deepseek-v3': 'blue-700',
-            'deepseek-r1': 'teal-500',
+            'deepseek-v3': { name: 'blue-700', isLight: false },
+            'deepseek-r1': { name: 'teal-500', isLight: false },
             // Qwen (Alibaba Cloud)
-            'qwen-32b': 'purple-500',
-            'qwen-235b': 'violet-500',
+            'qwen-32b': { name: 'purple-500', isLight: false },
+            'qwen-235b': { name: 'violet-500', isLight: false },
             // Llama (Meta)
-            'llama-blue': 'indigo-600',
+            'llama-blue': { name: 'indigo-600', isLight: false },
             // Mixtral (Mistral AI)
-            'mistral-orange': 'orange-500',
+            'mistral-orange': { name: 'orange-500', isLight: false },
             // Claude (Anthropic)
-            'claude-mauve': 'rose-800',
-            // Groq
-            'groq-yellow': 'amber-400',
+            'claude-mauve': { name: 'rose-800', isLight: false },
+            // Groq - THIS IS THE KEY CHANGE
+            'groq-yellow': { name: 'amber-400', isLight: true }, // Amber is a light background
             // NVIDIA
-            'nvidia-green': 'emerald-500',           
+            'nvidia-green': { name: 'emerald-500', isLight: false },
             // Default
-            'indigo-600': 'indigo-600'
+            'indigo-600': { name: 'indigo-600', isLight: false }
         };
 
-        const generateColorClasses = (colorName) => {
-            const color = COLOR_MAP[colorName] || 'indigo-600';
+         const generateColorClasses = (colorName) => {
+            const config = COLOR_MAP[colorName] || { name: 'indigo-600', isLight: false };
+            const color = config.name;
             return {
                 bg: `bg-${color}`,
                 hoverBg: `hover:bg-${color}/90`,
                 text: `text-${color}`,
                 border: `border-${color}`,
-                userBubbleBg: `bg-${color}`
+                userBubbleBg: `bg-${color}`,
+                // These are the new, intelligent text color classes
+                userBubbleTextColorClass: config.isLight ? 'text-gray-900' : 'text-white',
+                userBubbleTimestampColorClass: config.isLight ? 'text-black/60' : 'text-white/70'
             };
         };
 
@@ -765,33 +768,35 @@ const firebaseConfig = {
             };
             const closeSidebar = () => { dom.sidebar.classList.add('-translate-x-full'); dom.sidebarOverlay.classList.add('hidden'); };
             
-                        const applyModelColorTheme = (colorName) => {
+            const applyModelColorTheme = (colorName) => {
                 const colorClasses = generateColorClasses(colorName);
-const elementsToColor = [dom.newChatBtn, dom.sendBtn];
-const oldBgColors = Object.values(COLOR_MAP).map(c => `bg-${c}`);
-const oldHoverBgColors = Object.values(COLOR_MAP).map(c => `hover:bg-${c}/90`);
+                const elementsToColor = [dom.newChatBtn, dom.sendBtn];
+                
+                const oldBgColors = Object.values(COLOR_MAP).map(c => `bg-${c.name}`);
+                const oldHoverBgColors = Object.values(COLOR_MAP).map(c => `hover:bg-${c.name}/90`);
 
-// Update New Chat and Send buttons
-elementsToColor.forEach(el => {
-    if (!el) return;
-    el.classList.remove(...oldBgColors, ...oldHoverBgColors);
-    el.classList.add(colorClasses.bg, colorClasses.hoverBg);
-});
+                // Update New Chat and Send buttons
+                elementsToColor.forEach(el => {
+                    if (!el) return;
+                    el.classList.remove(...oldBgColors, ...oldHoverBgColors);
+                    el.classList.add(colorClasses.bg, colorClasses.hoverBg);
+                });
 
-// Update the new model selector dot
-if(dom.modelSelectorDot) {
-    dom.modelSelectorDot.classList.remove(...oldBgColors);
-    dom.modelSelectorDot.classList.add(colorClasses.bg);
-}
+                // Update the new model selector dot
+                if(dom.modelSelectorDot) {
+                    dom.modelSelectorDot.classList.remove(...oldBgColors);
+                    dom.modelSelectorDot.classList.add(colorClasses.bg);
+                }
 
-// Update the old pill (can be removed later if not used)
-const pill = dom.modelIndicatorPill;
-if (pill) {
-    const oldTextColors = Object.values(COLOR_MAP).map(c => `text-${c}`);
-    const oldBorderColors = Object.values(COLOR_MAP).map(c => `border-${c}`);
-    pill.classList.remove(...oldTextColors, ...oldBorderColors);
-    pill.classList.add(colorClasses.text, colorClasses.border);
-}
+                // Update the old pill (can be removed later if not used)
+                const pill = dom.modelIndicatorPill;
+                if (pill) {
+
+                    const oldTextColors = Object.values(COLOR_MAP).map(c => `text-${c.name}`);
+                    const oldBorderColors = Object.values(COLOR_MAP).map(c => `border-${c.name}`);
+                    pill.classList.remove(...oldTextColors, ...oldBorderColors);
+                    pill.classList.add(colorClasses.text, colorClasses.border);
+                }
             };
             
             const SYSTEM_PROMPTS = [
@@ -1053,7 +1058,8 @@ if (pill) {
     const modelConf = MODEL_CONFIG[messageModel || currentChat.model] || { name: 'AI', color: 'indigo-600' };
     const colorClasses = generateColorClasses(modelConf.color);
 
-   const bubbleClasses = isUser ? `user-bubble ${colorClasses.userBubbleBg} text-white` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
+   const bubbleClasses = isUser ? `user-bubble ${colorClasses.userBubbleBg}` : `bot-bubble bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-200 shadow-sm`;
+
     const justifyClass = isUser ? 'justify-end' : 'justify-start';
 
     let userAvatarSrc = 'https://i.pravatar.cc/40?u=guest';
@@ -1086,7 +1092,7 @@ if (pill) {
 
     const copyButtonHtml = `<button class="copy-message-btn p-1.5 rounded-md text-gray-400 self-center"><svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75" /></svg></button>`;
 
-    const bubbleHtml = `<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none">${messageContent}</div><div class="text-xs ${isUser ? 'text-white/70' : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>`;
+    const bubbleHtml = `<div class="${bubbleClasses} chat-bubble p-4 text-sm"><div class="prose dark:prose-invert max-w-none ${isUser ? colorClasses.userBubbleTextColorClass : ''}">${messageContent}</div><div class="text-xs ${isUser ? colorClasses.userBubbleTimestampColorClass : 'text-gray-400 dark:text-gray-500'} mt-2 text-right">${getTimestamp()}</div></div>`;
 
     let finalLayout = '';
     if (isUser) {
